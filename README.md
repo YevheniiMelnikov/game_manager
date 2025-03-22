@@ -1,4 +1,4 @@
-# GymBot
+# GameManager
 
 ## Requirements
 

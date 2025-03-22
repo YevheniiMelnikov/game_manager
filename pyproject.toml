@@ -9,11 +9,13 @@ readme = "README.md"
 python = "^3.13"
 django = "^5.1.7"
 djangorestframework = "^3.15.2"
-psycopg2-binary = "^2.9.10"
 celery = "^5.4.0"
 django-celery-beat = "^2.7.0"
 loguru = "^0.7.3"
 redis = "^5.2.1"
+psycopg2-binary = "^2.9.10"
+psycopg = {extras = ["binary"], version = "^3.2.6"}
+psycopg2 = "^2.9.10"
 
 
 [tool.poetry.group.dev.dependencies]
