@@ -1,25 +1,15 @@
 version: '3'
 
 tasks:
-  localrun:
-    desc: Run bot locally
+  migrate:
+    desc: Migrate db
     cmds:
-      - docker compose -f docker-compose-local.yml up --build
+      - docker exec -it game_management_api python manage.py makemigrations && docker exec -it game_management_api python manage.py migrate
 
-  build:
-    desc: Build Docker-container
+  run:
+    desc: Run application
     cmds:
-      - docker compose build
-
-  up:
-    desc: Start Docker-containers
-    cmds:
-      - docker compose up
-
-  down:
-    desc: Stop Docker-containers
-    cmds:
-      - docker compose down
+      - docker compose up --build
 
   lint:
     desc: Run linters
