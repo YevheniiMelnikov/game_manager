@@ -1,4 +1,5 @@
 import os
+import sys
 from datetime import timedelta
 from pathlib import Path
 
@@ -71,16 +72,24 @@ TEMPLATES = [
 
 ASGI_APPLICATION = "game_management.asgi.application"
 
-DATABASES = {
-    "default": {
-        "ENGINE": "django.db.backends.postgresql",
-        "NAME": settings.DJANGO_DB_NAME,
-        "USER": settings.DJANGO_DB_USER,
-        "PASSWORD": settings.DJANGO_DB_PASSWORD,
-        "HOST": settings.DJANGO_DB_HOST,
-        "PORT": settings.DJANGO_DB_PORT,
+if "pytest" in sys.modules:
+    DATABASES = {
+        "default": {
+            "ENGINE": "django.db.backends.sqlite3",
+            "NAME": ":memory:",
+        }
     }
-}
+else:
+    DATABASES = {
+        "default": {
+            "ENGINE": "django.db.backends.postgresql",
+            "NAME": settings.DJANGO_DB_NAME,
+            "USER": settings.DJANGO_DB_USER,
+            "PASSWORD": settings.DJANGO_DB_PASSWORD,
+            "HOST": settings.DJANGO_DB_HOST,
+            "PORT": settings.DJANGO_DB_PORT,
+        }
+    }
 
 LOGGING = {
     "version": 1,

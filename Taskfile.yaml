@@ -32,3 +32,8 @@ tasks:
           poetry update
           poetry export -f requirements.txt --without-hashes -o requirements.txt
         fi
+
+  test:
+    desc: Run tests with coverage
+    cmds:
+      - export DJANGO_SETTINGS_MODULE=game_management.settings && pytest --cov=games --cov-report=term-missing
