@@ -19,6 +19,8 @@ class Settings:
     DJANGO_DB_HOST: str = os.getenv("DJANGO_DB_HOST", "db")
     DJANGO_DB_PORT: int = int(os.getenv("DJANGO_DB_PORT", 5432))
 
+    COLLECT_STATIC: bool = os.getenv("COLLECT_STATIC", "False") == "True"
+
     DB_NAME: str = os.getenv("DB_NAME", "postgres")
     DB_USER: str = os.getenv("DB_USER", "postgres")
     DB_PASSWORD: str = os.getenv("DB_PASSWORD", "postgres")
@@ -27,7 +29,6 @@ class Settings:
     POSTGRES_USER: str = os.getenv("POSTGRES_USER", "postgres")
     POSTGRES_PASSWORD: str = os.getenv("POSTGRES_PASSWORD", "postgres")
     POSTGRES_DB: str = os.getenv("POSTGRES_DB", "postgres")
-    PGDATA: str = os.getenv("PGDATA", "/var/lib/postgresql/data/pgdata")
 
     REDIS_HOST: str = os.getenv("REDIS_HOST", "redis")
     REDIS_PORT: int = int(os.getenv("REDIS_PORT", 6379))
@@ -36,5 +37,4 @@ class Settings:
     CELERY_BROKER_URL: str = os.getenv("CELERY_BROKER_URL", "redis://redis:6379/0")
     CELERY_RESULT_BACKEND: str = os.getenv("CELERY_RESULT_BACKEND", "redis://redis:6379/0")
 
-    API_KEY: str = os.getenv("API_KEY")
     TZ: str = os.getenv("TZ", "Europe/Kyiv")

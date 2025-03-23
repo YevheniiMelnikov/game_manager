@@ -16,6 +16,8 @@ redis = "^5.2.1"
 psycopg2-binary = "^2.9.10"
 psycopg = {extras = ["binary"], version = "^3.2.6"}
 psycopg2 = "^2.9.10"
+djangorestframework-simplejwt = "^5.5.0"
+rest-framework-simplejwt = "^0.0.2"
 
 
 [tool.poetry.group.dev.dependencies]

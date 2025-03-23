@@ -8,6 +8,7 @@ RUN apt-get update \
     && apt-get install -y --no-install-recommends \
        gcc \
        python3-dev \
+       libpq-dev \
        curl \
        git \
        postgresql-client \
@@ -26,8 +27,6 @@ RUN uv pip install --system uvicorn
 COPY . .
 
 RUN mkdir -p /app/logs
-
-RUN python manage.py collectstatic --noinput
 
 EXPOSE 8000
 

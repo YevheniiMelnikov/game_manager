@@ -52,7 +52,7 @@ services:
       - redisdata:/data
     command: ["redis-server", "--appendonly", "yes"]
     healthcheck:
-      test: [ "CMD", "redis-cli", "ping" ]
+      test: ["CMD", "redis-cli", "ping"]
       interval: 10s
       timeout: 5s
       retries: 3
@@ -65,7 +65,7 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
-    command: celery -A game_management worker -l info
+    command: bash -c "sleep 10 && celery -A game_management worker -l info"
     env_file:
       - .env
     depends_on:
@@ -82,7 +82,7 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
-    command: celery -A game_management beat -l info
+    command: bash -c "sleep 15 && celery -A game_management beat -l info"
     env_file:
       - .env
     depends_on:

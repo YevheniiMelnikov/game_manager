@@ -1,11 +1,16 @@
 import os
+from datetime import timedelta
 from pathlib import Path
+
+from core.settings import Settings
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-SECRET_KEY = os.getenv("DJANGO_SECRET_KEY")
-DEBUG = os.getenv("DJANGO_DEBUG", "True") == "True"
-ALLOWED_HOSTS = os.getenv("DJANGO_ALLOWED_HOSTS", "*").split(",")
+settings = Settings()
+
+SECRET_KEY = settings.DJANGO_SECRET_KEY
+DEBUG = settings.DJANGO_DEBUG
+ALLOWED_HOSTS = settings.DJANGO_ALLOWED_HOSTS.split(",")
 
 INSTALLED_APPS = [
     "django.contrib.admin",
@@ -32,10 +37,18 @@ MIDDLEWARE = [
 REST_FRAMEWORK = {
     "DEFAULT_AUTHENTICATION_CLASSES": [
         "rest_framework.authentication.SessionAuthentication",
+        "rest_framework_simplejwt.authentication.JWTAuthentication",
     ],
     "DEFAULT_PERMISSION_CLASSES": [
         "rest_framework.permissions.IsAuthenticated",
     ],
+}
+
+SIMPLE_JWT = {
+    "ACCESS_TOKEN_LIFETIME": timedelta(minutes=30),
+    "REFRESH_TOKEN_LIFETIME": timedelta(days=7),
+    "ROTATE_REFRESH_TOKENS": False,
+    "BLACKLIST_AFTER_ROTATION": True,
 }
 
 ROOT_URLCONF = "game_management.urls"
@@ -61,11 +74,11 @@ ASGI_APPLICATION = "game_management.asgi.application"
 DATABASES = {
     "default": {
         "ENGINE": "django.db.backends.postgresql",
-        "NAME": os.getenv("DJANGO_DB_NAME", "game_management"),
-        "USER": os.getenv("DJANGO_DB_USER", "postgres"),
-        "PASSWORD": os.getenv("DJANGO_DB_PASSWORD", "postgres"),
-        "HOST": os.getenv("DJANGO_DB_HOST", "db"),
-        "PORT": os.getenv("DJANGO_DB_PORT", "5432"),
+        "NAME": settings.DJANGO_DB_NAME,
+        "USER": settings.DJANGO_DB_USER,
+        "PASSWORD": settings.DJANGO_DB_PASSWORD,
+        "HOST": settings.DJANGO_DB_HOST,
+        "PORT": settings.DJANGO_DB_PORT,
     }
 }
 
@@ -74,7 +87,7 @@ LOGGING = {
     "disable_existing_loggers": False,
     "handlers": {
         "loguru": {
-            "level": "DEBUG",
+            "level": settings.DJANGO_LOG_LEVEL,
             "class": "core.logger.InterceptHandler",
         },
     },
@@ -101,18 +114,35 @@ LOGGING = {
     },
 }
 
-
 STATIC_URL = "/static/"
-STATIC_ROOT = os.path.join(BASE_DIR, "staticfiles")
+if settings.COLLECT_STATIC:
+    STATIC_ROOT = "/app/static"
+else:
+    STATIC_ROOT = None
 
 MEDIA_URL = "/media/"
 MEDIA_ROOT = os.path.join(BASE_DIR, "media")
 
 LANGUAGE_CODE = "en-us"
-TIME_ZONE = "Europe/Kiev"
+TIME_ZONE = settings.TZ
 USE_I18N = True
 USE_L10N = True
 USE_TZ = True
 
-CELERY_BROKER_URL = os.getenv("CELERY_BROKER_URL", "redis://redis:6379/0")
-CELERY_RESULT_BACKEND = os.getenv("CELERY_RESULT_BACKEND", "redis://redis:6379/0")
+CELERY_BROKER_URL = settings.CELERY_BROKER_URL
+CELERY_RESULT_BACKEND = settings.CELERY_RESULT_BACKEND
+CELERY_ACCEPT_CONTENT = ["json"]
+CELERY_TASK_SERIALIZER = "json"
+CELERY_RESULT_SERIALIZER = "json"
+CELERY_TIMEZONE = settings.TZ
+
+CELERY_BEAT_SCHEDULE = {
+    "generate_monthly_reports": {
+        "task": "games.tasks.generate_monthly_reports",
+        "schedule": timedelta(days=1),
+    },
+    "generate_session_ratio": {
+        "task": "games.tasks.generate_session_ratio",
+        "schedule": timedelta(days=1),
+    },
+}
