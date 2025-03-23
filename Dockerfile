@@ -4,6 +4,10 @@ ENV APP_HOME=/app
 ENV PYTHONPATH=$APP_HOME
 ENV TZ=Europe/Kyiv
 
+ENV POETRY_VERSION=1.5.1
+ENV POETRY_VIRTUALENVS_CREATE=false
+ENV POETRY_NO_INTERACTION=1
+
 RUN apt-get update \
     && apt-get install -y --no-install-recommends \
        gcc \
@@ -16,13 +20,17 @@ RUN apt-get update \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
 
-RUN pip install uv
+RUN pip install uv uvicorn \
+    && curl -sSL https://install.python-poetry.org | python3 -
+
+ENV PATH="/root/.local/bin:$PATH"
 
 WORKDIR $APP_HOME
 
-COPY requirements.txt .
-RUN uv pip install --system -r requirements.txt
-RUN uv pip install --system uvicorn
+COPY pyproject.toml poetry.lock ./
+
+RUN poetry config virtualenvs.create false \
+    && poetry install --no-dev
 
 COPY . .
 

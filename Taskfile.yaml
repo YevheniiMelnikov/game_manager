@@ -4,7 +4,8 @@ tasks:
   migrate:
     desc: Migrate db
     cmds:
-      - docker exec -it game_management_api python manage.py makemigrations && docker exec -it game_management_api python manage.py migrate
+      - docker exec -it game_management_api python manage.py makemigrations
+      - docker exec -it game_management_api python manage.py migrate
 
   run:
     desc: Run application
@@ -14,23 +15,31 @@ tasks:
   lint:
     desc: Run linters
     cmds:
-      - ruff check --fix --config=pyproject.toml
+      - |
+        if [ -n "$COMSPEC" ] && [ -x "$COMSPEC" ]; then
+          powershell -Command "poetry run ruff check --fix --config=pyproject.toml"
+        else
+          poetry run ruff check --fix --config=pyproject.toml
+        fi
 
   format:
     desc: Run formatter
     cmds:
-      - ruff format --config=pyproject.toml
+      - |
+        if [ -n "$COMSPEC" ] && [ -x "$COMSPEC" ]; then
+          powershell -Command "poetry run ruff format --config=pyproject.toml"
+        else
+          poetry run ruff format --config=pyproject.toml
+        fi
 
   update:
-    desc: Update dependencies and sync requirements.txt
+    desc: Update dependencies
     cmds:
       - |
         if [ -n "$COMSPEC" ] && [ -x "$COMSPEC" ]; then
           powershell -Command "poetry update"
-          powershell -Command "poetry export -f requirements.txt --without-hashes -o requirements.txt"
         else
           poetry update
-          poetry export -f requirements.txt --without-hashes -o requirements.txt
         fi
 
   test:
