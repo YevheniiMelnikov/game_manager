@@ -6,7 +6,6 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     initial = True
 
     dependencies = [
@@ -15,31 +14,52 @@ class Migration(migrations.Migration):
 
     operations = [
         migrations.CreateModel(
-            name='Game',
+            name="Game",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('name', models.CharField(max_length=255)),
-                ('language', models.CharField(max_length=50)),
-                ('category', models.CharField(max_length=100)),
+                ("id", models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name="ID")),
+                ("name", models.CharField(max_length=255)),
+                ("language", models.CharField(max_length=50)),
+                ("category", models.CharField(max_length=100)),
             ],
         ),
         migrations.CreateModel(
-            name='GameSession',
+            name="GameSession",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('start_datetime', models.DateTimeField()),
-                ('game', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='sessions', to='games.game')),  # noqa
-                ('participants', models.ManyToManyField(related_name='game_sessions', to=settings.AUTH_USER_MODEL)),
+                ("id", models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name="ID")),
+                ("start_datetime", models.DateTimeField()),
+                (
+                    "game",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE, related_name="sessions", to="games.game"
+                    ),
+                ),  # noqa
+                ("participants", models.ManyToManyField(related_name="game_sessions", to=settings.AUTH_USER_MODEL)),
             ],
         ),
         migrations.CreateModel(
-            name='GameResults',
+            name="GameResults",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('score', models.IntegerField()),
-                ('status', models.CharField(choices=[('Created', 'Created'), ('InProgress', 'In Progress'), ('Finished', 'Finished'), ('Failed', 'Failed')], max_length=20)),  # noqa
-                ('is_completed', models.BooleanField()),
-                ('game_session', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='results', to='games.gamesession')),  # noqa
+                ("id", models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name="ID")),
+                ("score", models.IntegerField()),
+                (
+                    "status",
+                    models.CharField(
+                        choices=[
+                            ("Created", "Created"),
+                            ("InProgress", "In Progress"),
+                            ("Finished", "Finished"),
+                            ("Failed", "Failed"),
+                        ],
+                        max_length=20,
+                    ),
+                ),  # noqa
+                ("is_completed", models.BooleanField()),
+                (
+                    "game_session",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE, related_name="results", to="games.gamesession"
+                    ),
+                ),  # noqa
             ],
         ),
     ]
