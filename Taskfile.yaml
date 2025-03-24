@@ -32,3 +32,8 @@ tasks:
     desc: Run tests with coverage
     cmds:
       - uv run pytest --cov=games --cov-report=term-missing
+
+  pre-commit:
+    desc: Run pre-commit hooks
+    cmds:
+      - uv run pre-commit run --all-files
