@@ -7,8 +7,6 @@ services:
     command: uvicorn game_management.asgi:application --host 0.0.0.0 --port 8000 --workers 4
     env_file:
       - .env
-    volumes:
-      - .:/app
     ports:
       - "8000:8000"
     depends_on:
@@ -21,6 +19,40 @@ services:
       interval: 10s
       timeout: 5s
       retries: 3
+    restart: unless-stopped
+    networks:
+      - game_manager
+
+  celery:
+    container_name: celery_worker
+    build:
+      context: .
+      dockerfile: Dockerfile
+    command: celery -A game_management worker -l info
+    env_file:
+      - .env
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    restart: unless-stopped
+    networks:
+      - game_manager
+
+  celery_beat:
+    container_name: celery_beat
+    build:
+      context: .
+      dockerfile: Dockerfile
+    command: celery -A game_management beat -l info
+    env_file:
+      - .env
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
     restart: unless-stopped
     networks:
       - game_manager
@@ -60,40 +92,6 @@ services:
     networks:
       - game_manager
 
-  celery:
-    container_name: celery_worker
-    build:
-      context: .
-      dockerfile: Dockerfile
-    command: bash -c "sleep 10 && celery -A game_management worker -l info"
-    env_file:
-      - .env
-    depends_on:
-      db:
-        condition: service_healthy
-      redis:
-        condition: service_healthy
-    restart: unless-stopped
-    networks:
-      - game_manager
-
-  celery_beat:
-    container_name: celery_beat
-    build:
-      context: .
-      dockerfile: Dockerfile
-    command: bash -c "sleep 15 && celery -A game_management beat -l info"
-    env_file:
-      - .env
-    depends_on:
-      db:
-        condition: service_healthy
-      redis:
-        condition: service_healthy
-    restart: unless-stopped
-    networks:
-      - game_manager
-
   nginx:
     image: nginx:latest
     container_name: nginx
@@ -113,9 +111,7 @@ services:
 
 volumes:
   pgdata:
-    driver: local
   redisdata:
-    driver: local
 
 networks:
   game_manager:

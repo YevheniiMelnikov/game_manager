@@ -15,34 +15,20 @@ tasks:
   lint:
     desc: Run linters
     cmds:
-      - |
-        if [ -n "$COMSPEC" ] && [ -x "$COMSPEC" ]; then
-          powershell -Command "poetry run ruff check --fix --config=pyproject.toml"
-        else
-          poetry run ruff check --fix --config=pyproject.toml
-        fi
+      - uv run ruff check --fix --config=pyproject.toml
 
   format:
     desc: Run formatter
     cmds:
-      - |
-        if [ -n "$COMSPEC" ] && [ -x "$COMSPEC" ]; then
-          powershell -Command "poetry run ruff format --config=pyproject.toml"
-        else
-          poetry run ruff format --config=pyproject.toml
-        fi
+      - uv run ruff format --config=pyproject.toml
 
   update:
     desc: Update dependencies
     cmds:
-      - |
-        if [ -n "$COMSPEC" ] && [ -x "$COMSPEC" ]; then
-          powershell -Command "poetry update"
-        else
-          poetry update
-        fi
+      - uv lock --upgrade
+      - uv sync
 
   test:
     desc: Run tests with coverage
     cmds:
-      - export DJANGO_SETTINGS_MODULE=game_management.settings && pytest --cov=games --cov-report=term-missing
+      - uv run pytest --cov=games --cov-report=term-missing

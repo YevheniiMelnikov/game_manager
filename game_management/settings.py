@@ -124,10 +124,14 @@ LOGGING = {
 }
 
 STATIC_URL = "/static/"
-if settings.COLLECT_STATIC:
-    STATIC_ROOT = "/app/static"
+STATIC_ROOT = os.path.join(BASE_DIR, "staticfiles")
+
+if not settings.COLLECT_STATIC:
+    STATICFILES_DIRS = [
+        os.path.join(BASE_DIR, "static"),
+    ]
 else:
-    STATIC_ROOT = None
+    STATICFILES_DIRS = []
 
 MEDIA_URL = "/media/"
 MEDIA_ROOT = os.path.join(BASE_DIR, "media")
