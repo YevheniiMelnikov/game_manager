@@ -19,8 +19,6 @@ class Settings:
     DJANGO_DB_HOST: str = os.getenv("DJANGO_DB_HOST", "db")
     DJANGO_DB_PORT: int = int(os.getenv("DJANGO_DB_PORT", 5432))
 
-    COLLECT_STATIC: bool = os.getenv("COLLECT_STATIC", "False") == "True"
-
     DB_NAME: str = os.getenv("DB_NAME", "postgres")
     DB_USER: str = os.getenv("DB_USER", "postgres")
     DB_PASSWORD: str = os.getenv("DB_PASSWORD", "postgres")
@@ -38,3 +36,4 @@ class Settings:
     CELERY_RESULT_BACKEND: str = os.getenv("CELERY_RESULT_BACKEND", "redis://redis:6379/0")
 
     TZ: str = os.getenv("TZ", "Europe/Kyiv")
+    CSRF_TRUSTED_ORIGINS: str = os.getenv("CSRF_TRUSTED_ORIGINS", "http://localhost:8000")

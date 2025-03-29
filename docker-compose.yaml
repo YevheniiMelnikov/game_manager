@@ -4,7 +4,7 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
-    command: uvicorn game_management.asgi:application --host 0.0.0.0 --port 8000 --workers 4
+    command: sh -c "python manage.py collectstatic --noinput && uvicorn game_management.asgi:application --host 0.0.0.0 --port 8000 --workers 4"
     env_file:
       - .env
     ports:
@@ -22,6 +22,8 @@ services:
     restart: unless-stopped
     networks:
       - game_manager
+    volumes:
+      - staticfiles:/app/staticfiles
 
   celery:
     container_name: celery_worker
@@ -96,12 +98,12 @@ services:
     image: nginx:latest
     container_name: nginx
     ports:
-      - "80:80"
-      - "443:443"
+      - "8080:80"
+      - "4443:443"
     volumes:
       - ./nginx.conf:/etc/nginx/conf.d/default.conf:ro
       - /etc/letsencrypt:/etc/letsencrypt:ro
-      - ./static:/opt/api/staticfiles:ro
+      - staticfiles:/opt/api/staticfiles:ro
     depends_on:
       web:
         condition: service_healthy
@@ -112,6 +114,7 @@ services:
 volumes:
   pgdata:
   redisdata:
+  staticfiles:
 
 networks:
   game_manager:

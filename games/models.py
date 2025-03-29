@@ -2,6 +2,27 @@ from django.db import models
 from django.contrib.auth.models import User
 
 
+class Company(models.Model):
+    name = models.CharField(max_length=255, unique=True)
+
+    def __str__(self):
+        return self.name
+
+
+class Participant(models.Model):
+    ROLES = [
+        ("SuperAdmin", "SuperAdmin"),
+        ("CompanyAdmin", "CompanyAdmin"),
+        ("Participant", "Participant"),
+    ]
+    user = models.OneToOneField(User, on_delete=models.CASCADE, related_name="participant_profile")
+    role = models.CharField(max_length=20, choices=ROLES)
+    company = models.ForeignKey(Company, on_delete=models.SET_NULL, null=True, blank=True)
+
+    def __str__(self):
+        return f"{self.user.username} ({self.role})"
+
+
 class Game(models.Model):
     name = models.CharField(max_length=255)
     language = models.CharField(max_length=50)
@@ -25,9 +46,8 @@ class GameResults(models.Model):
         ("Created", "Created"),
         ("InProgress", "In Progress"),
         ("Finished", "Finished"),
-        ("Failed", "Failed"),
+        ("Filed", "Filed"),
     ]
-
     game_session = models.ForeignKey(GameSession, on_delete=models.CASCADE, related_name="results")
     score = models.IntegerField()
     status = models.CharField(max_length=20, choices=STATUS_CHOICES)

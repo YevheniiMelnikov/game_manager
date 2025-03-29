@@ -3,10 +3,10 @@ from django.contrib.auth.models import Group
 
 
 class Command(BaseCommand):
-    help = "User rores creating"
+    help = "User roles creating"
 
     def handle(self, *args, **kwargs):
-        roles = ["CompanyAdmin", "Participant"]
+        roles = ["SuperAdmin", "CompanyAdmin", "Participant"]
         for role in roles:
             group, created = Group.objects.get_or_create(name=role)
             if created:

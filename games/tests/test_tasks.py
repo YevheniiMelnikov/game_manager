@@ -3,8 +3,6 @@ import pytest
 import json
 from games.tasks import generate_monthly_reports, generate_session_ratio
 
-os.environ.setdefault("DJANGO_SETTINGS_MODULE", "game_management.settings")
-
 REPORTS_DIR = "/app/reports/"
 
 
@@ -27,16 +25,21 @@ def test_generate_monthly_reports(game, game_session, game_result):
 
 
 @pytest.mark.django_db
-def test_generate_session_ratio(game, game_session, game_result):
+def test_generate_session_ratio(game, game_session, game_result, participant):
     result = generate_session_ratio()
     assert result is not None, "Session ratio report generation failed"
     ratio_files = [f for f in os.listdir(REPORTS_DIR) if f.startswith("session_ratio_")]
     latest_report = sorted(ratio_files)[-1]
     report_data = read_report(latest_report)
-    assert isinstance(report_data, dict), "Session ratio data should be a dictionary"
-    for game_name, data in report_data.items():
-        assert "completed" in data, f"Completed count missing for game {game_name}"
-        assert "failed" in data, f"Failed count missing for game {game_name}"
-        assert "total" in data, f"Total count missing for game {game_name}"
-        assert "completion_ratio" in data, f"Completion ratio missing for game {game_name}"
-        assert "failure_ratio" in data, f"Failure ratio missing for game {game_name}"
+    for section in ["by_game", "by_participant"]:
+        assert section in report_data, f"Section {section} missing in session ratio report"
+        for key, data in report_data[section].items():
+            assert "completed" in data, f"Completed count missing for {key} in section {section}"
+            assert "failed" in data, f"Failed count missing for {key} in section {section}"
+            assert "total" in data, f"Total count missing for {key} in section {section}"
+            assert "completion_ratio" in data, f"Completion ratio missing for {key} in section {section}"
+            assert "failure_ratio" in data, f"Failure ratio missing for {key} in section {section}"
+    assert "overall" in report_data, "Overall section missing in session ratio report"
+    overall = report_data["overall"]
+    for key in ["completed", "failed", "total", "completion_ratio", "failure_ratio"]:
+        assert key in overall, f"{key} missing in overall section"

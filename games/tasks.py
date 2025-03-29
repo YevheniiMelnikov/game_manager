@@ -2,8 +2,7 @@ from celery import shared_task
 from datetime import datetime, timedelta
 from django.db.models import Sum
 from django.utils.timezone import now
-
-from .models import Game, GameSession
+from games.models import Game, GameSession, Participant
 import logging
 import os
 import json
@@ -49,21 +48,48 @@ def generate_monthly_reports():
 def generate_session_ratio():
     report = {}
     clear_reports("session_ratio_")
+
+    report["by_game"] = {}
     for game in Game.objects.all():
         sessions_qs = game.sessions.all()
         total_sessions = sessions_qs.count()
-        completed_sessions = game.sessions.filter(results__is_completed=True).count()
+        completed_sessions = sessions_qs.filter(results__is_completed=True).distinct().count()
         failed_sessions = total_sessions - completed_sessions
-        completion_ratio = completed_sessions / total_sessions if total_sessions else 0
-        failure_ratio = failed_sessions / total_sessions if total_sessions else 0
-        report[game.name] = {
+        report["by_game"][game.name] = {
             "completed": completed_sessions,
             "failed": failed_sessions,
             "total": total_sessions,
-            "completion_ratio": round(completion_ratio, 2),
-            "failure_ratio": round(failure_ratio, 2),
+            "completion_ratio": round(completed_sessions / total_sessions, 2) if total_sessions else 0,
+            "failure_ratio": round(failed_sessions / total_sessions, 2) if total_sessions else 0,
         }
+
+    report["by_participant"] = {}
+    for participant in Participant.objects.all():
+        sessions_qs = participant.user.game_sessions.all()
+        total_sessions = sessions_qs.count()
+        completed_sessions = sessions_qs.filter(results__is_completed=True).distinct().count()
+        failed_sessions = total_sessions - completed_sessions
+        report["by_participant"][participant.user.username] = {
+            "completed": completed_sessions,
+            "failed": failed_sessions,
+            "total": total_sessions,
+            "completion_ratio": round(completed_sessions / total_sessions, 2) if total_sessions else 0,
+            "failure_ratio": round(failed_sessions / total_sessions, 2) if total_sessions else 0,
+        }
+
+    all_sessions = GameSession.objects.all()
+    total_sessions = all_sessions.count()
+    completed_sessions = all_sessions.filter(results__is_completed=True).distinct().count()
+    failed_sessions = total_sessions - completed_sessions
+    report["overall"] = {
+        "completed": completed_sessions,
+        "failed": failed_sessions,
+        "total": total_sessions,
+        "completion_ratio": round(completed_sessions / total_sessions, 2) if total_sessions else 0,
+        "failure_ratio": round(failed_sessions / total_sessions, 2) if total_sessions else 0,
+    }
+
     filename = f"session_ratio_{datetime.now().strftime('%Y%m%d%H%M%S')}.json"
     save_report(filename, report)
-    logger.info("Session Completion Ratio: %s", report)
+    logger.info("Session Ratio Report: %s", report)
     return report

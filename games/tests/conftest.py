@@ -1,5 +1,5 @@
 import pytest
-from games.models import Game, GameSession, GameResults
+from games.models import Game, GameSession, GameResults, Participant
 from django.contrib.auth.models import User
 from django.utils.timezone import make_aware
 from datetime import datetime
@@ -13,6 +13,11 @@ def game():
 @pytest.fixture
 def user():
     return User.objects.create(username="test_user")
+
+
+@pytest.fixture
+def participant(user):
+    return Participant.objects.create(user=user, role="Participant")
 
 
 @pytest.fixture

@@ -12,6 +12,4 @@ RUN uv pip install --system .
 
 COPY . .
 
-RUN python manage.py collectstatic --noinput
-
-CMD ["uvicorn", "game_management.asgi:application", "--host", "0.0.0.0", "--port", "8000"]
+CMD ["sh", "-c", "python manage.py collectstatic --noinput && uvicorn game_management.asgi:application --host 0.0.0.0 --port 8000"]

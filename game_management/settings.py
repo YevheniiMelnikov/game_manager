@@ -7,13 +7,14 @@ from core.settings import Settings
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-settings = Settings()
+Settings = Settings()
 
-SECRET_KEY = settings.DJANGO_SECRET_KEY
-DEBUG = settings.DJANGO_DEBUG
-ALLOWED_HOSTS = settings.DJANGO_ALLOWED_HOSTS.split(",")
+SECRET_KEY = Settings.DJANGO_SECRET_KEY
+DEBUG = Settings.DJANGO_DEBUG
+ALLOWED_HOSTS = Settings.DJANGO_ALLOWED_HOSTS.split(",")
 
 INSTALLED_APPS = [
+    "jet",
     "django.contrib.admin",
     "django.contrib.auth",
     "django.contrib.contenttypes",
@@ -83,11 +84,11 @@ else:
     DATABASES = {
         "default": {
             "ENGINE": "django.db.backends.postgresql",
-            "NAME": settings.DJANGO_DB_NAME,
-            "USER": settings.DJANGO_DB_USER,
-            "PASSWORD": settings.DJANGO_DB_PASSWORD,
-            "HOST": settings.DJANGO_DB_HOST,
-            "PORT": settings.DJANGO_DB_PORT,
+            "NAME": Settings.DJANGO_DB_NAME,
+            "USER": Settings.DJANGO_DB_USER,
+            "PASSWORD": Settings.DJANGO_DB_PASSWORD,
+            "HOST": Settings.DJANGO_DB_HOST,
+            "PORT": Settings.DJANGO_DB_PORT,
         }
     }
 
@@ -96,7 +97,7 @@ LOGGING = {
     "disable_existing_loggers": False,
     "handlers": {
         "loguru": {
-            "level": settings.DJANGO_LOG_LEVEL,
+            "level": Settings.DJANGO_LOG_LEVEL,
             "class": "core.logger.InterceptHandler",
         },
     },
@@ -126,28 +127,25 @@ LOGGING = {
 STATIC_URL = "/static/"
 STATIC_ROOT = os.path.join(BASE_DIR, "staticfiles")
 
-if not settings.COLLECT_STATIC:
-    STATICFILES_DIRS = [
-        os.path.join(BASE_DIR, "static"),
-    ]
-else:
-    STATICFILES_DIRS = []
+STATICFILES_DIRS = [os.path.join(BASE_DIR, "static")]
 
 MEDIA_URL = "/media/"
 MEDIA_ROOT = os.path.join(BASE_DIR, "media")
 
+CSRF_TRUSTED_ORIGINS = [Settings.CSRF_TRUSTED_ORIGINS]
+
 LANGUAGE_CODE = "en-us"
-TIME_ZONE = settings.TZ
+TIME_ZONE = Settings.TZ
 USE_I18N = True
 USE_L10N = True
 USE_TZ = True
 
-CELERY_BROKER_URL = settings.CELERY_BROKER_URL
-CELERY_RESULT_BACKEND = settings.CELERY_RESULT_BACKEND
+CELERY_BROKER_URL = Settings.CELERY_BROKER_URL
+CELERY_RESULT_BACKEND = Settings.CELERY_RESULT_BACKEND
 CELERY_ACCEPT_CONTENT = ["json"]
 CELERY_TASK_SERIALIZER = "json"
 CELERY_RESULT_SERIALIZER = "json"
-CELERY_TIMEZONE = settings.TZ
+CELERY_TIMEZONE = Settings.TZ
 
 CELERY_BEAT_SCHEDULE = {
     "generate_monthly_reports": {

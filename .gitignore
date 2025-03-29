@@ -158,3 +158,4 @@ database.db
 *~
 docker-compose-local.yml
 game_management.log
+/staticfiles/
