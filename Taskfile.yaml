@@ -29,9 +29,9 @@ tasks:
       - uv sync
 
   test:
-    desc: Run tests with coverage
+    desc: Run pytest with Django settings
     cmds:
-      - uv run pytest --cov=games --cov-report=term-missing
+      - uv run pytest games/tests
 
   pre-commit:
     desc: Run pre-commit hooks

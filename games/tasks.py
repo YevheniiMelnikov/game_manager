@@ -2,7 +2,7 @@ from celery import shared_task
 from datetime import datetime, timedelta
 from django.db.models import Sum
 from django.utils.timezone import now
-from games.models import Game, GameSession, Participant
+from games.models import Game, GameSession, Participant, GameResults
 import logging
 import os
 import json
@@ -33,9 +33,9 @@ def generate_monthly_reports():
     clear_reports("monthly_report_")
     for game in Game.objects.all():
         participants = (
-            GameSession.objects.filter(game=game, start_datetime__gte=last_month)
-            .values("participants__username")
-            .annotate(total_score=Sum("results__score"))
+            GameResults.objects.filter(game_session__game=game, game_session__start_datetime__gte=last_month)
+            .values("game_session__participants__username")
+            .annotate(total_score=Sum("score"))
         )
         report[game.name] = {"participants": list(participants)}
     filename = f"monthly_report_{datetime.now().strftime('%Y%m%d%H%M%S')}.json"

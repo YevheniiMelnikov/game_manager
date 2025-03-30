@@ -280,20 +280,6 @@ wheels = [
 ]
 
 [[package]]
-name = "djangorestframework-simplejwt"
-version = "5.5.0"
-source = { registry = "https://pypi.org/simple" }
-dependencies = [
-    { name = "django" },
-    { name = "djangorestframework" },
-    { name = "pyjwt" },
-]
-sdist = { url = "https://files.pythonhosted.org/packages/db/1e/0d4439d0fa1d93599fbcfc56efdc02cbf012e3a4b4ef90c835e0a51017d4/djangorestframework_simplejwt-5.5.0.tar.gz", hash = "sha256:474a1b737067e6462b3609627a392d13a4da8a08b1f0574104ac6d7b1406f90e", size = 97946 }
-wheels = [
-    { url = "https://files.pythonhosted.org/packages/42/b4/d1c1750aa7c8cc07e4974275f96b9b9b3a38e95ff734e14b4e97790c8974/djangorestframework_simplejwt-5.5.0-py3-none-any.whl", hash = "sha256:4ef6b38af20cdde4a4a51d1fd8e063cbbabb7b45f149cc885d38d905c5a62edb", size = 103480 },
-]
-
-[[package]]
 name = "filelock"
 version = "3.18.0"
 source = { registry = "https://pypi.org/simple" }
@@ -312,12 +298,10 @@ dependencies = [
     { name = "django-celery-beat" },
     { name = "django-jet-reboot" },
     { name = "djangorestframework" },
-    { name = "djangorestframework-simplejwt" },
     { name = "loguru" },
     { name = "psycopg", extra = ["binary"] },
     { name = "psycopg2-binary" },
     { name = "redis" },
-    { name = "rest-framework-simplejwt" },
     { name = "uvicorn", extra = ["standard"] },
 ]
 
@@ -337,12 +321,10 @@ requires-dist = [
     { name = "django-celery-beat", specifier = ">=2.7.0" },
     { name = "django-jet-reboot", specifier = ">=1.0.12" },
     { name = "djangorestframework", specifier = ">=3.15.2" },
-    { name = "djangorestframework-simplejwt", specifier = ">=5.5.0" },
     { name = "loguru", specifier = ">=0.7.3" },
     { name = "psycopg", extras = ["binary"], specifier = ">=3.2.6" },
     { name = "psycopg2-binary", specifier = ">=2.9.10" },
     { name = "redis", specifier = ">=5.2.1" },
-    { name = "rest-framework-simplejwt", specifier = ">=0.0.2" },
     { name = "uvicorn", extras = ["standard"], specifier = ">=0.29.0" },
 ]
 
@@ -613,15 +595,6 @@ wheels = [
 ]
 
 [[package]]
-name = "pyjwt"
-version = "2.9.0"
-source = { registry = "https://pypi.org/simple" }
-sdist = { url = "https://files.pythonhosted.org/packages/fb/68/ce067f09fca4abeca8771fe667d89cc347d1e99da3e093112ac329c6020e/pyjwt-2.9.0.tar.gz", hash = "sha256:7e1e5b56cc735432a7369cbfa0efe50fa113ebecdc04ae6922deba8b84582d0c", size = 78825 }
-wheels = [
-    { url = "https://files.pythonhosted.org/packages/79/84/0fdf9b18ba31d69877bd39c9cd6052b47f3761e9910c15de788e519f079f/PyJWT-2.9.0-py3-none-any.whl", hash = "sha256:3b02fb0f44517787776cf48f2ae25d8e14f300e6d7545a4315cee571a415e850", size = 22344 },
-]
-
-[[package]]
 name = "pytest"
 version = "8.3.5"
 source = { registry = "https://pypi.org/simple" }
@@ -739,15 +712,6 @@ dependencies = [
 sdist = { url = "https://files.pythonhosted.org/packages/47/da/d283a37303a995cd36f8b92db85135153dc4f7a8e4441aa827721b442cfb/redis-5.2.1.tar.gz", hash = "sha256:16f2e22dff21d5125e8481515e386711a34cbec50f0e44413dd7d9c060a54e0f", size = 4608355 }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/3c/5f/fa26b9b2672cbe30e07d9a5bdf39cf16e3b80b42916757c5f92bca88e4ba/redis-5.2.1-py3-none-any.whl", hash = "sha256:ee7e1056b9aea0f04c6c2ed59452947f34c4940ee025f5dd83e6a6418b6989e4", size = 261502 },
-]
-
-[[package]]
-name = "rest-framework-simplejwt"
-version = "0.0.2"
-source = { registry = "https://pypi.org/simple" }
-sdist = { url = "https://files.pythonhosted.org/packages/b3/82/b33aeec7825b6c97dececb80234dacf458ee337727c5c00d4592182913b1/rest_framework_simplejwt-0.0.2.tar.gz", hash = "sha256:035187ce5380e18e8b966610a89b6460fb4b73cd179979343888fb190328125d", size = 2176 }
-wheels = [
-    { url = "https://files.pythonhosted.org/packages/28/de/60ad25b09eb586d8b63b5246cce264b10055a4e09e4bb5aca9e9ec374807/rest_framework_simplejwt-0.0.2-py3-none-any.whl", hash = "sha256:620c56826ff4791c4aaa730ec52aed1f4c74b9c20ea15b9fc1a39bdf99a29a30", size = 2832 },
 ]
 
 [[package]]

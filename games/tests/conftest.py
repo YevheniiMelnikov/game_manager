@@ -1,27 +1,38 @@
+import os
+import django
 import pytest
-from games.models import Game, GameSession, GameResults, Participant
-from django.contrib.auth.models import User
-from django.utils.timezone import make_aware
-from datetime import datetime
+
+os.environ.setdefault("DJANGO_SETTINGS_MODULE", "game_management.settings")
+django.setup()
 
 
 @pytest.fixture
-def game():
-    return Game.objects.create(name="Test Game", language="EN", category="Action")
+def user(db):
+    from django.contrib.auth.models import User
 
-
-@pytest.fixture
-def user():
-    return User.objects.create(username="test_user")
+    return User.objects.create_user(username="testuser", password="pass")
 
 
 @pytest.fixture
 def participant(user):
+    from games.models import Participant
+
     return Participant.objects.create(user=user, role="Participant")
 
 
 @pytest.fixture
+def game():
+    from games.models import Game
+
+    return Game.objects.create(name="Memory Game", language="EN", category="Cognitive")
+
+
+@pytest.fixture
 def game_session(game, user):
+    from games.models import GameSession
+    from django.utils.timezone import make_aware
+    from datetime import datetime
+
     session = GameSession.objects.create(
         game=game,
         start_datetime=make_aware(datetime(2025, 3, 23, 14, 0, 0)),
@@ -32,6 +43,8 @@ def game_session(game, user):
 
 @pytest.fixture
 def game_result(game_session):
+    from games.models import GameResults
+
     return GameResults.objects.create(
         game_session=game_session,
         score=100,

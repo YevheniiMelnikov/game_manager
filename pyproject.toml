@@ -15,8 +15,6 @@ dependencies = [
     "redis>=5.2.1",
     "psycopg2-binary>=2.9.10",
     "psycopg[binary]>=3.2.6",
-    "djangorestframework-simplejwt>=5.5.0",
-    "rest-framework-simplejwt>=0.0.2",
     "uvicorn[standard]>=0.29.0",
     "django-jet-reboot>=1.0.12"
 ]

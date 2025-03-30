@@ -22,6 +22,9 @@ def test_generate_monthly_reports(game, game_session, game_result):
     assert isinstance(report_data, dict), "Monthly report data should be a dictionary"
     for game_name, data in report_data.items():
         assert "participants" in data, f"Participants not found in report for game {game_name}"
+        for participant in data["participants"]:
+            assert "game_session__participants__username" in participant, "Username missing in report"
+            assert "total_score" in participant, "Total score missing in report"
 
 
 @pytest.mark.django_db
