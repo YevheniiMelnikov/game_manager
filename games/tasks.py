@@ -2,6 +2,7 @@ from celery import shared_task
 from datetime import datetime, timedelta
 from django.db.models import Sum
 from django.utils.timezone import now
+from django.conf import settings
 from games.models import Game, GameSession, Participant, GameResults
 import logging
 import os
@@ -9,7 +10,7 @@ import json
 
 logger = logging.getLogger(__name__)
 
-REPORTS_DIR = "/app/reports/"
+REPORTS_DIR = os.path.join(settings.BASE_DIR, "reports")
 os.makedirs(REPORTS_DIR, exist_ok=True)
 
 
@@ -40,7 +41,7 @@ def generate_monthly_reports():
         report[game.name] = {"participants": list(participants)}
     filename = f"monthly_report_{datetime.now().strftime('%Y%m%d%H%M%S')}.json"
     save_report(filename, report)
-    logger.info("Monthly Reports: %s", report)
+    logging.info("Monthly report saved")
     return report
 
 
@@ -91,5 +92,5 @@ def generate_session_ratio():
 
     filename = f"session_ratio_{datetime.now().strftime('%Y%m%d%H%M%S')}.json"
     save_report(filename, report)
-    logger.info("Session Ratio Report: %s", report)
+    logging.info("Session ratio report saved")
     return report

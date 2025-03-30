@@ -9,7 +9,7 @@ class CompanySerializer(serializers.ModelSerializer):
 
 
 class ParticipantSerializer(serializers.ModelSerializer):
-    user = serializers.StringRelatedField()  # отображает имя пользователя
+    user = serializers.StringRelatedField()
     company = CompanySerializer(read_only=True)
 
     class Meta:
@@ -24,7 +24,7 @@ class GameSerializer(serializers.ModelSerializer):
 
 
 class GameSessionSerializer(serializers.ModelSerializer):
-    participants = serializers.StringRelatedField(many=True)
+    participants = serializers.PrimaryKeyRelatedField(many=True, read_only=True)
 
     class Meta:
         model = GameSession
