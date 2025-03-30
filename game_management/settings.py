@@ -1,5 +1,4 @@
 import os
-import sys
 from datetime import timedelta
 from pathlib import Path
 
@@ -65,11 +64,11 @@ TEMPLATES = [
 
 ASGI_APPLICATION = "game_management.asgi.application"
 
-if "pytest" in sys.modules:
+if os.getenv("ENV", "dev") == "dev":
     DATABASES = {
         "default": {
             "ENGINE": "django.db.backends.sqlite3",
-            "NAME": ":memory:",
+            "NAME": BASE_DIR / "local.sqlite3",
         }
     }
 else:
@@ -131,6 +130,8 @@ TIME_ZONE = Settings.TZ
 USE_I18N = True
 USE_L10N = True
 USE_TZ = True
+
+DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
 CELERY_BROKER_URL = Settings.CELERY_BROKER_URL
 CELERY_RESULT_BACKEND = Settings.CELERY_RESULT_BACKEND

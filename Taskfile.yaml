@@ -37,3 +37,12 @@ tasks:
     desc: Run pre-commit hooks
     cmds:
       - uv run pre-commit run --all-files
+
+  generate:
+    desc: Generate and load test data fixtures
+    env:
+      ENV: dev
+    cmds:
+      - uv run python manage.py migrate
+      - uv run python manage.py generate_fixtures
+      - uv run python manage.py loaddata games/fixtures/test_data.json
