@@ -1,6 +1,6 @@
 from django.contrib import admin
+from django.http.response import HttpResponse
 from django.urls import path, include
-from django.http import HttpResponse
 from games.views import (
     CompanyListCreateView,
     ParticipantListCreateView,
