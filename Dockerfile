@@ -12,4 +12,8 @@ RUN uv pip install --system .
 
 COPY . .
 
-CMD ["sh", "-c", "python manage.py collectstatic --noinput && uvicorn game_management.asgi:application --host 0.0.0.0 --port 8000"]
+COPY entrypoint.sh /entrypoint.sh
+
+RUN chmod +x /entrypoint.sh
+
+ENTRYPOINT ["/entrypoint.sh"]

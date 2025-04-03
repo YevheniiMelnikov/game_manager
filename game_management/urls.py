@@ -7,7 +7,10 @@ from games.views import (
     GameListCreateView,
     GameSessionListCreateView,
     GameResultsListCreateView,
+    RegisterView,
+    LoginView,
 )
+from django.contrib.auth import views as auth_views
 
 
 def health_check(request):
@@ -23,4 +26,7 @@ urlpatterns = [
     path("api/games/", GameListCreateView.as_view(), name="game-list"),
     path("api/gamesessions/", GameSessionListCreateView.as_view(), name="gamesession-list"),
     path("api/gameresults/", GameResultsListCreateView.as_view(), name="gameresults-list"),
+    path("api/register/", RegisterView.as_view(), name="api-register"),
+    path("api/login/", LoginView.as_view(), name="api-login"),
+    path("api/logout/", auth_views.LogoutView.as_view(), name="api-logout"),
 ]
