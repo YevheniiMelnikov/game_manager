@@ -1,8 +1,13 @@
+import logging
 import os
+import sys
 from datetime import timedelta
 from pathlib import Path
 
-from core.settings import Settings
+from celery import Celery
+from loguru import logger
+
+from settings import Settings
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -11,6 +16,7 @@ Settings = Settings()
 SECRET_KEY = Settings.DJANGO_SECRET_KEY
 DEBUG = Settings.DJANGO_DEBUG
 ALLOWED_HOSTS = Settings.DJANGO_ALLOWED_HOSTS.split(",")
+AUTH_USER_MODEL = "games.CustomUser"
 
 INSTALLED_APPS = [
     "jet",
@@ -83,6 +89,67 @@ else:
         }
     }
 
+STATIC_URL = "/static/"
+STATIC_ROOT = os.path.join(BASE_DIR, "staticfiles")
+
+STATICFILES_DIRS = [os.path.join(BASE_DIR, "static")]
+
+MEDIA_URL = "/media/"
+MEDIA_ROOT = os.path.join(BASE_DIR, "media")
+
+CSRF_TRUSTED_ORIGINS = [Settings.CSRF_TRUSTED_ORIGINS]
+
+LANGUAGE_CODE = "en-us"
+TIME_ZONE = Settings.TZ
+USE_I18N = True
+USE_L10N = True
+USE_TZ = True
+
+DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
+
+app = Celery("game_management")
+app.config_from_object("django.conf:settings", namespace="CELERY")
+app.autodiscover_tasks()
+CELERY_BROKER_URL = Settings.CELERY_BROKER_URL
+CELERY_RESULT_BACKEND = Settings.CELERY_RESULT_BACKEND
+CELERY_ACCEPT_CONTENT = ["json"]
+CELERY_TASK_SERIALIZER = "json"
+CELERY_RESULT_SERIALIZER = "json"
+CELERY_TIMEZONE = Settings.TZ
+
+CELERY_BEAT_SCHEDULE = {
+    "generate_monthly_reports": {
+        "task": "games.tasks.generate_monthly_reports",
+        "schedule": timedelta(days=1),
+    },
+    "generate_session_ratio": {
+        "task": "games.tasks.generate_session_ratio",
+        "schedule": timedelta(days=1),
+    },
+}
+
+logger.remove()
+logger.configure(
+    handlers=[
+        {
+            "sink": sys.stdout,
+            "level": Settings.DJANGO_LOG_LEVEL,
+            "format": "<green>{time:YYYY-MM-DD HH:mm:ss}</green> | <level>{level}</level> | <cyan>{name}</cyan>:<cyan>{function}</cyan>:<cyan>{line}</cyan> - <level>{message}</level>",  # noqa
+            "colorize": True,
+        },
+        {
+            "sink": "game_management.log",
+            "level": "INFO",
+            "serialize": False,
+            "format": "{time:YYYY-MM-DD HH:mm:ss} | {level} | {name}:{function}:{line} - {message}",
+            "rotation": "100 MB",
+            "retention": "30 days",
+            "compression": "zip",
+            "enqueue": True,
+        },
+    ]
+)
+
 LOGGING = {
     "version": 1,
     "disable_existing_loggers": False,
@@ -115,38 +182,17 @@ LOGGING = {
     },
 }
 
-STATIC_URL = "/static/"
-STATIC_ROOT = os.path.join(BASE_DIR, "staticfiles")
 
-STATICFILES_DIRS = [os.path.join(BASE_DIR, "static")]
+class InterceptHandler(logging.Handler):  # TODO: IS IT OK TO PUT THIS HERE?
+    def emit(self, record: logging.LogRecord) -> None:
+        try:
+            loguru_level = logger.level(record.levelname).name
+        except Exception:
+            loguru_level = record.levelno
 
-MEDIA_URL = "/media/"
-MEDIA_ROOT = os.path.join(BASE_DIR, "media")
+        frame, depth = logging.currentframe(), 2
+        while frame and frame.f_code.co_filename == logging.__file__:
+            frame = frame.f_back
+            depth += 1
 
-CSRF_TRUSTED_ORIGINS = [Settings.CSRF_TRUSTED_ORIGINS]
-
-LANGUAGE_CODE = "en-us"
-TIME_ZONE = Settings.TZ
-USE_I18N = True
-USE_L10N = True
-USE_TZ = True
-
-DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
-
-CELERY_BROKER_URL = Settings.CELERY_BROKER_URL
-CELERY_RESULT_BACKEND = Settings.CELERY_RESULT_BACKEND
-CELERY_ACCEPT_CONTENT = ["json"]
-CELERY_TASK_SERIALIZER = "json"
-CELERY_RESULT_SERIALIZER = "json"
-CELERY_TIMEZONE = Settings.TZ
-
-CELERY_BEAT_SCHEDULE = {
-    "generate_monthly_reports": {
-        "task": "games.tasks.generate_monthly_reports",
-        "schedule": timedelta(days=1),
-    },
-    "generate_session_ratio": {
-        "task": "games.tasks.generate_session_ratio",
-        "schedule": timedelta(days=1),
-    },
-}
+        logger.opt(depth=depth, exception=record.exc_info).log(loguru_level, record.getMessage())

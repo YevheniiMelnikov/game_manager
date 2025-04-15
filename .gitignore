@@ -161,3 +161,4 @@ game_management.log
 /staticfiles/
 /local.sqlite3
 /games/fixtures/test_data.json
+/static/
