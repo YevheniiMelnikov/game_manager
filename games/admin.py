@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import Company, Participant, Game, GameSession, GameResults
+from .models import Company, Game, GameSession, GameResults
 
 
 @admin.register(Company)
@@ -8,8 +8,8 @@ class CompanyAdmin(admin.ModelAdmin):
     search_fields = ("name",)
 
 
-@admin.register(Participant)
-class ParticipantAdmin(admin.ModelAdmin):
+@admin.register()
+class ParticipantAdmin(admin.ModelAdmin):  # TODO: FIX
     list_display = ("id", "user", "role", "company")
     list_filter = ("role", "company")
     search_fields = ("user__username",)
