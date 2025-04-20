@@ -28,6 +28,11 @@ tasks:
       - uv lock --upgrade
       - uv sync
 
+  update-win:
+    desc: Sync dependencies into Windows venv (run from PowerShell)
+    cmds:
+      - uv sync --active
+
   test:
     desc: Run pytest with Django settings
     cmds:

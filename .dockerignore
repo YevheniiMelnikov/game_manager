@@ -21,3 +21,10 @@ Dockerfile
 coverage.xml
 htmlcov/
 *.tox/
+.git/
+.venv/
+.venv-win
+.uv/
+media/
+static/
+node_modules/

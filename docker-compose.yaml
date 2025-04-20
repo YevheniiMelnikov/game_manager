@@ -4,7 +4,6 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
-    command: sh -c "python manage.py collectstatic --noinput && uvicorn game_management.asgi:application --host 0.0.0.0 --port 8000 --workers 4"
     env_file:
       - .env
     ports:
@@ -30,7 +29,7 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
-    command: celery -A game_management worker -l info
+    command: celery -A settings worker -l info
     env_file:
       - .env
     depends_on:
@@ -47,7 +46,7 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
-    command: celery -A game_management beat -l info
+    command: celery -A settings beat -l info
     env_file:
       - .env
     depends_on:

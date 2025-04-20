@@ -1,5 +1,8 @@
 from django.contrib import admin
-from .models import Company, Participant, Game, GameSession, GameResults
+from django.contrib.auth import get_user_model
+from .models import Company, Game, GameSession, GameResults
+
+User = get_user_model()
 
 
 @admin.register(Company)
@@ -8,12 +11,12 @@ class CompanyAdmin(admin.ModelAdmin):
     search_fields = ("name",)
 
 
-@admin.register(Participant)
-class ParticipantAdmin(admin.ModelAdmin):
-    list_display = ("id", "user", "role", "company")
+@admin.register(User)
+class CustomUserAdmin(admin.ModelAdmin):
+    list_display = ("id", "username", "role", "company")
     list_filter = ("role", "company")
-    search_fields = ("user__username",)
-    raw_id_fields = ("user",)
+    search_fields = ("username",)
+    raw_id_fields = ("company",)
 
 
 @admin.register(Game)
@@ -27,11 +30,11 @@ class GameSessionAdmin(admin.ModelAdmin):
     list_display = ("id", "game", "start_datetime")
     list_filter = ("game", "start_datetime")
     search_fields = ("game__name",)
-    filter_horizontal = ("participants",)
+    filter_horizontal = ("participants",)  # здесь выбираем пользователей-участников
 
 
 @admin.register(GameResults)
 class GameResultsAdmin(admin.ModelAdmin):
-    list_display = ("id", "game_session", "score", "status", "is_completed")
-    list_filter = ("status", "is_completed")
+    list_display = ("id", "game_session", "score", "is_completed")
+    list_filter = ("is_completed",)
     search_fields = ("game_session__game__name",)

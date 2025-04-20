@@ -1,4 +1,3 @@
-import logging
 import os
 import sys
 from datetime import timedelta
@@ -19,6 +18,7 @@ ALLOWED_HOSTS = Settings.DJANGO_ALLOWED_HOSTS.split(",")
 AUTH_USER_MODEL = "games.CustomUser"
 
 INSTALLED_APPS = [
+    "games",
     "jet",
     "django.contrib.admin",
     "django.contrib.auth",
@@ -28,7 +28,6 @@ INSTALLED_APPS = [
     "django.contrib.staticfiles",
     "rest_framework",
     "django_celery_beat",
-    "games",
 ]
 
 MIDDLEWARE = [
@@ -92,8 +91,6 @@ else:
 STATIC_URL = "/static/"
 STATIC_ROOT = os.path.join(BASE_DIR, "staticfiles")
 
-STATICFILES_DIRS = [os.path.join(BASE_DIR, "static")]
-
 MEDIA_URL = "/media/"
 MEDIA_ROOT = os.path.join(BASE_DIR, "media")
 
@@ -149,50 +146,3 @@ logger.configure(
         },
     ]
 )
-
-LOGGING = {
-    "version": 1,
-    "disable_existing_loggers": False,
-    "handlers": {
-        "loguru": {
-            "level": Settings.DJANGO_LOG_LEVEL,
-            "class": "core.logger.InterceptHandler",
-        },
-    },
-    "root": {
-        "handlers": ["loguru"],
-        "level": "DEBUG",
-    },
-    "loggers": {
-        "django": {
-            "handlers": ["loguru"],
-            "level": "INFO",
-            "propagate": False,
-        },
-        "django.request": {
-            "handlers": ["loguru"],
-            "level": "ERROR",
-            "propagate": False,
-        },
-        "uvicorn.access": {
-            "handlers": ["loguru"],
-            "level": "INFO",
-            "propagate": False,
-        },
-    },
-}
-
-
-class InterceptHandler(logging.Handler):  # TODO: IS IT OK TO PUT THIS HERE?
-    def emit(self, record: logging.LogRecord) -> None:
-        try:
-            loguru_level = logger.level(record.levelname).name
-        except Exception:
-            loguru_level = record.levelno
-
-        frame, depth = logging.currentframe(), 2
-        while frame and frame.f_code.co_filename == logging.__file__:
-            frame = frame.f_back
-            depth += 1
-
-        logger.opt(depth=depth, exception=record.exc_info).log(loguru_level, record.getMessage())
