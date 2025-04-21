@@ -66,9 +66,12 @@ class GameSession(models.Model):
         ("Filed", "Filed"),
     ]
     game = models.ForeignKey(Game, on_delete=models.CASCADE, related_name="sessions")
-    start_datetime = models.DateTimeField()
+    start_datetime = models.DateTimeField(db_index=True)
     participants = models.ManyToManyField("games.CustomUser", related_name="game_sessions")
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default="Created")
+
+    class Meta:
+        ordering = ["-start_datetime"]
 
     def __str__(self) -> str:
         return f"Session of {self.game.name} at {self.start_datetime}"

@@ -1,96 +1,29 @@
+{% load static %}
 <!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
   <title>User Registration</title>
-  <style>
-    /* Minimalistic style */
-    body {
-      font-family: Arial, sans-serif;
-      background-color: #f4f4f4;
-      margin: 0;
-      padding: 0;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      height: 100vh;
-    }
-    .container {
-      background-color: #fff;
-      padding: 20px 30px;
-      border: 1px solid #ddd;
-      border-radius: 4px;
-      box-shadow: 0 0 10px rgba(0,0,0,0.1);
-      width: 300px;
-    }
-    h2 {
-      text-align: center;
-      color: #333;
-    }
-    form {
-      display: flex;
-      flex-direction: column;
-    }
-    input, select {
-      padding: 8px;
-      margin: 5px 0;
-      border: 1px solid #ccc;
-      border-radius: 3px;
-    }
-    button {
-      padding: 10px;
-      border: none;
-      border-radius: 3px;
-      background-color: #5cb85c;
-      color: #fff;
-      margin-top: 10px;
-      cursor: pointer;
-    }
-    button:hover {
-      background-color: #4cae4c;
-    }
-    .error {
-      color: red;
-      font-size: 0.9em;
-    }
-  </style>
+  <link rel="preload" href="{% static 'games/fonts/Inter-Regular.woff2' %}" as="font" type="font/woff2" crossorigin>
+  <link rel="preload" href="{% static 'games/fonts/Inter-Bold.woff2' %}" as="font" type="font/woff2" crossorigin>
+  <link rel="stylesheet" href="{% static 'games/css/auth.css' %}">
 </head>
 <body>
-  <div class="container">
+  <div class="auth-container">
     <h2>User Registration</h2>
-    {% if errors %}
-      <div class="error">
-        <ul>
-          {% for field, error in errors.items %}
-            <li>{{ field }}: {{ error }}</li>
-          {% endfor %}
-        </ul>
-      </div>
+    {% if messages %}
+      <ul class="messages">
+        {% for m in messages %}
+          <li class="{{ m.tags }}">{{ m }}</li>
+        {% endfor %}
+      </ul>
     {% endif %}
-    <form id="registrationForm" method="post" action="{% url 'register' %}">
+    <form id="registrationForm" method="post">
       {% csrf_token %}
-      <input type="text" name="username" placeholder="Username" required>
-      <input type="password" name="password" placeholder="Password" required>
-      <select name="role" required>
-        <option value="">Select role</option>
-        <option value="SuperAdmin">SuperAdmin</option>
-        <option value="CompanyAdmin">CompanyAdmin</option>
-        <option value="Participant">Participant</option>
-      </select>
-      <input type="text" name="company_id" placeholder="Company ID (if CompanyAdmin)">
+      {{ form.as_p }}
       <button type="submit">Register</button>
     </form>
-    <script>
-      // Simple client-side form validation
-      document.getElementById('registrationForm').addEventListener('submit', function(event) {
-          var role = this.role.value;
-          var companyId = this.company_id.value;
-          if (role === 'CompanyAdmin' && companyId === '') {
-              alert('Company ID is required for CompanyAdmin role.');
-              event.preventDefault();
-          }
-      });
-    </script>
   </div>
+  <script src="{% static 'games/js/register.js' %}"></script>
 </body>
 </html>

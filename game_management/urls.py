@@ -1,5 +1,7 @@
+# game_management/urls.py
+
 from django.contrib import admin
-from django.http.response import HttpResponse
+from django.http import HttpResponse
 from django.urls import path, include
 from rest_framework.routers import DefaultRouter
 from games.views import (
@@ -10,8 +12,6 @@ from games.views import (
     UserViewSet,
     RegisterView,
     LoginView,
-    UserRegistrationView,
-    RegistrationSuccessView,
 )
 from django.contrib.auth import views as auth_views
 
@@ -28,13 +28,13 @@ def health_check(request):
 
 
 urlpatterns = [
+    path("jet/", include(("jet.urls", "jet"), namespace="jet")),
     path("admin/", admin.site.urls),
     path("health/", health_check, name="health"),
-    path("api/auth/", include("rest_framework.urls")),
-    path("api/register/", RegisterView.as_view(), name="api-register"),
-    path("api/login/", LoginView.as_view(), name="api-login"),
-    path("api/logout/", auth_views.LogoutView.as_view(), name="api-logout"),
-    path("api/", include(router.urls)),
-    path("register/", UserRegistrationView.as_view(), name="register"),
-    path("register/success/", RegistrationSuccessView.as_view(), name="register_success"),
+    path("api/v1/auth/", include("rest_framework.urls")),
+    path("api/v1/register/", RegisterView.as_view(), name="api-register"),
+    path("api/v1/login/", LoginView.as_view(), name="api-login"),
+    path("api/v1/logout/", auth_views.LogoutView.as_view(), name="api-logout"),
+    path("api/v1/", include(router.urls)),
+    path("", include("games.urls")),
 ]

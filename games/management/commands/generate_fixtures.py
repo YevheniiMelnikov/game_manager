@@ -1,99 +1,131 @@
-import random
-from django.core.management.base import BaseCommand
-from django.contrib.auth.models import User
-from games.models import Company, Participant, Game, GameSession, GameResults
-from django.utils.timezone import now
-import json
 import os
+import json
+import random
 
-FIXTURES_DIR = "games/fixtures/"
+from django.core.management.base import BaseCommand
+from django.contrib.auth import get_user_model
+from django.utils.timezone import now
+
+from games.models import Company, Game, GameSession, GameResults
+
+FIXTURES_DIR = os.path.join("games", "fixtures")
 os.makedirs(FIXTURES_DIR, exist_ok=True)
+
+User = get_user_model()
+
+ROLE_CHOICES = ["SuperAdmin", "CompanyAdmin", "Participant"]
+LANGUAGES = ["EN", "RU", "DE"]
+CATEGORIES = ["Action", "Puzzle", "Strategy"]
+SESSION_COUNT = 100
+USER_COUNT = 10
+GAME_COUNT = 10
+COMPANY_COUNT = 5
 
 
 class Command(BaseCommand):
     help = "Generate test data fixtures for the project"
 
-    def handle(self, *args, **kwargs):
+    def handle(self, *args, **options):
         fixtures = []
 
+        # 1) Компании
         companies = []
-        for i in range(5):
-            company = Company.objects.create(name=f"Company {i + 1}")
+        for i in range(1, COMPANY_COUNT + 1):
+            company = Company.objects.create(name=f"Company {i}")
             companies.append(company)
-            fixtures.append({"model": "games.company", "pk": company.id, "fields": {"name": company.name}})
-
-        participants = []
-        for i in range(10):
-            user = User.objects.create(username=f"user{i + 1}")
-            role = random.choice(["SuperAdmin", "CompanyAdmin", "Participant"])
-            company = random.choice(companies) if role == "CompanyAdmin" else None
-            participant = Participant.objects.create(user=user, role=role, company=company)
-            participants.append(participant)
             fixtures.append(
                 {
-                    "model": "auth.user",
-                    "pk": user.id,
-                    "fields": {
-                        "username": user.username,
-                        "password": "pbkdf2_sha256$260000$dummyhash",
-                        "is_active": True,
-                    },
+                    "model": "games.company",
+                    "pk": company.pk,
+                    "fields": {"name": company.name},
                 }
             )
+
+        users = []
+        for i in range(1, USER_COUNT + 1):
+            role = random.choice(ROLE_CHOICES)
+            company = random.choice(companies) if role == "CompanyAdmin" else None
+
+            user = User.objects.create_user(
+                username=f"user{i}",
+                password="pbkdf2_sha256$260000$dummyhash",
+                is_active=True,
+                role=role,
+                company=company,
+            )
+            users.append(user)
+
             fixtures.append(
                 {
-                    "model": "games.participant",
-                    "pk": participant.id,
-                    "fields": {"user": user.id, "role": participant.role, "company": company.id if company else None},
+                    "model": "games.customuser",
+                    "pk": user.pk,
+                    "fields": {
+                        "username": user.username,
+                        "password": user.password,
+                        "is_active": user.is_active,
+                        "role": user.role,
+                        "company": company.pk if company else None,
+                    },
                 }
             )
 
         games = []
-        for i in range(10):
+        for i in range(1, GAME_COUNT + 1):
             game = Game.objects.create(
-                name=f"Game {i + 1}",
-                language=random.choice(["EN", "RU", "DE"]),
-                category=random.choice(["Action", "Puzzle", "Strategy"]),
+                name=f"Game {i}",
+                language=random.choice(LANGUAGES),
+                category=random.choice(CATEGORIES),
             )
             games.append(game)
             fixtures.append(
                 {
                     "model": "games.game",
-                    "pk": game.id,
-                    "fields": {"name": game.name, "language": game.language, "category": game.category},
-                }
-            )
-
-        for i in range(100):
-            game = random.choice(games)
-            session = GameSession.objects.create(game=game, start_datetime=now())
-            user_ids = [participant.user.id for participant in participants]
-            selected_user_ids = random.sample(user_ids, k=random.randint(1, 5))
-            session.participants.set(selected_user_ids)
-            fixtures.append(
-                {
-                    "model": "games.gamesession",
-                    "pk": session.id,
+                    "pk": game.pk,
                     "fields": {
-                        "game": session.game.id,
-                        "start_datetime": session.start_datetime.isoformat(),
-                        "participants": selected_user_ids,
+                        "name": game.name,
+                        "language": game.language,
+                        "category": game.category,
                     },
                 }
             )
 
+        for _ in range(SESSION_COUNT):
+            game = random.choice(games)
+            session = GameSession.objects.create(
+                game=game,
+                start_datetime=now(),
+            )
+
+            participant_ids = random.sample([u.pk for u in users], k=random.randint(1, 5))
+            session.participants.set(participant_ids)
+
+            fixtures.append(
+                {
+                    "model": "games.gamesession",
+                    "pk": session.pk,
+                    "fields": {
+                        "game": game.pk,
+                        "start_datetime": session.start_datetime.isoformat(),
+                        "status": session.status,
+                        "participants": participant_ids,
+                    },
+                }
+            )
+
+            status = random.choice([c[0] for c in GameResults._meta.get_field("status").choices])
             result = GameResults.objects.create(
                 game_session=session,
                 score=random.randint(0, 1000),
-                status=random.choice(["Created", "InProgress", "Finished", "Filed"]),
+                status=status,
                 is_completed=random.choice([True, False]),
             )
+
             fixtures.append(
                 {
                     "model": "games.gameresults",
-                    "pk": result.id,
+                    "pk": result.pk,
                     "fields": {
-                        "game_session": session.id,
+                        "game_session": session.pk,
                         "score": result.score,
                         "status": result.status,
                         "is_completed": result.is_completed,
@@ -101,7 +133,8 @@ class Command(BaseCommand):
                 }
             )
 
-        with open(os.path.join(FIXTURES_DIR, "test_data.json"), "w") as f:
-            json.dump(fixtures, f, indent=4)
+        out_path = os.path.join(FIXTURES_DIR, "test_data.json")
+        with open(out_path, "w", encoding="utf-8") as f:
+            json.dump(fixtures, f, indent=2, ensure_ascii=False)
 
-        self.stdout.write(self.style.SUCCESS("Fixtures generated successfully!"))
+        self.stdout.write(self.style.SUCCESS(f"Fixtures generated successfully: {out_path}"))

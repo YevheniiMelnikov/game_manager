@@ -74,24 +74,10 @@ Raw SQL alternatives included for performance testing and analytics accuracy com
 Minimalist web-based user registration is available at:
 
 ```
-http://localhost:8000/register/
+http://localhost:8080/register/
 ```
 
 Useful for manually onboarding users with specific roles (SuperAdmin, CompanyAdmin, etc.)
-
----
-
-## 📁 Project Structure
-
-```
-game_management/     # Django settings and root config
-games/               # Main app with models, tasks, views
-    └── templates/
-        └── games/
-            ├── register.html
-            └── register_success.html
-reports/             # Celery task output as JSON
-```
 
 ---
 

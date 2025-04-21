@@ -57,11 +57,8 @@ def test_generate_session_ratio(
     for section in ["by_game", "by_participant"]:
         assert section in report_data, f"Section {section} missing in session ratio report"
         for key, data in report_data[section].items():
-            assert "completed" in data, f"Completed count missing for {key} in section {section}"
-            assert "failed" in data, f"Failed count missing for {key} in section {section}"
-            assert "total" in data, f"Total count missing for {key} in section {section}"
-            assert "completion_ratio" in data, f"Completion ratio missing for {key} in section {section}"
-            assert "failure_ratio" in data, f"Failure ratio missing for {key} in section {section}"
+            for field in ["completed", "failed", "total", "completion_ratio", "failure_ratio"]:
+                assert field in data, f"{field} missing for {key} in section {section}"
     assert "overall" in report_data, "Overall section missing in session ratio report"
     overall = report_data["overall"]
     for key in ["completed", "failed", "total", "completion_ratio", "failure_ratio"]:

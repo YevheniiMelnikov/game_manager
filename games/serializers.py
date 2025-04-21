@@ -38,38 +38,27 @@ class UserSerializer(serializers.ModelSerializer):
         fields = ("id", "username", "company", "role")
 
 
-ROLE_CHOICES = [("SuperAdmin", "SuperAdmin"), ("CompanyAdmin", "CompanyAdmin"), ("Participant", "Participant")]
-
-
-class RegisterSerializer(serializers.Serializer):
-    username = serializers.CharField()
+class RegisterSerializer(serializers.ModelSerializer):
     password = serializers.CharField(write_only=True)
-    role = serializers.ChoiceField(choices=ROLE_CHOICES)
-    company_id = serializers.IntegerField(required=False)
+    company_id = serializers.IntegerField(write_only=True, required=False)
 
-    @staticmethod
-    def validate_username(value: str) -> str:
-        if User.objects.filter(username=value).exists():
-            raise serializers.ValidationError("A user with that username already exists.")
+    def validate_company_id(self, value):
+        if self.initial_data.get("role") == "CompanyAdmin" and not value:
+            raise serializers.ValidationError("This field is required for CompanyAdmin role.")
         return value
 
-    def validate(self, data):
-        if data.get("role") == "CompanyAdmin" and not data.get("company_id"):
-            raise serializers.ValidationError({"company_id": "This field is required for CompanyAdmin role."})
-        return data
-
     def create(self, validated_data):
-        company = None
-        if validated_data.get("company_id"):
-            from .models import Company
-
-            company = Company.objects.get(id=validated_data["company_id"])
-        user = User.objects.create_user(
-            username=validated_data["username"],
-            password=validated_data["password"],
-            company=company,
-            role=validated_data["role"],
-        )
-        group, _ = Group.objects.get_or_create(name=validated_data["role"])
+        company_id = validated_data.pop("company_id", None)
+        password = validated_data.pop("password")
+        user = User.objects.create_user(**validated_data)
+        user.set_password(password)
+        if company_id:
+            user.company_id = company_id
+        user.save()
+        group, _ = Group.objects.get_or_create(name=user.role)
         user.groups.add(group)
         return user
+
+    class Meta:
+        model = User
+        fields = ("username", "password", "role", "company_id")

@@ -30,7 +30,7 @@ class GameSessionAdmin(admin.ModelAdmin):
     list_display = ("id", "game", "start_datetime")
     list_filter = ("game", "start_datetime")
     search_fields = ("game__name",)
-    filter_horizontal = ("participants",)  # здесь выбираем пользователей-участников
+    filter_horizontal = ("participants",)
 
 
 @admin.register(GameResults)
