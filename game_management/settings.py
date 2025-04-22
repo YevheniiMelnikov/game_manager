@@ -18,8 +18,8 @@ ALLOWED_HOSTS = Settings.DJANGO_ALLOWED_HOSTS.split(",")
 AUTH_USER_MODEL = "games.CustomUser"
 
 INSTALLED_APPS = [
-    "games",
     "jet",
+    "games.apps.GamesConfig",
     "django.contrib.admin",
     "django.contrib.auth",
     "django.contrib.contenttypes",

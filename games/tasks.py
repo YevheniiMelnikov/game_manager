@@ -1,6 +1,6 @@
 import os
 import json
-import logging
+from loguru import logger
 from datetime import timedelta
 from celery import shared_task
 from django.db import transaction, connection
@@ -10,7 +10,6 @@ from django.conf import settings
 from django.contrib.auth import get_user_model
 from .models import Game, GameSession, GameResults
 
-logger = logging.getLogger(__name__)
 User = get_user_model()
 REPORTS_DIR = os.path.join(settings.BASE_DIR, "reports")
 os.makedirs(REPORTS_DIR, exist_ok=True)
