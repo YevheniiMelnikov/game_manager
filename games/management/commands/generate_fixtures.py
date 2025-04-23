@@ -112,23 +112,21 @@ class Command(BaseCommand):
                 }
             )
 
-            status = random.choice([c[0] for c in GameResults._meta.get_field("status").choices])
-            result = GameResults.objects.create(
+            GameResults.objects.create(
                 game_session=session,
                 score=random.randint(0, 1000),
-                status=status,
                 is_completed=random.choice([True, False]),
             )
 
             fixtures.append(
                 {
-                    "model": "games.gameresults",
-                    "pk": result.pk,
+                    "model": "games.gamesession",
+                    "pk": session.pk,
                     "fields": {
-                        "game_session": session.pk,
-                        "score": result.score,
-                        "status": result.status,
-                        "is_completed": result.is_completed,
+                        "game": game.pk,
+                        "start_datetime": session.start_datetime.isoformat(),
+                        "status": session.status,
+                        "participants": participant_ids,
                     },
                 }
             )

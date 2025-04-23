@@ -1,6 +1,6 @@
 from django.apps import AppConfig
 
-from settings import Settings
+from env_settings import Settings
 from loguru import logger
 
 

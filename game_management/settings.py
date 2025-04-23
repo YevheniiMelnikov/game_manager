@@ -5,13 +5,10 @@ from pathlib import Path
 
 from celery import Celery
 from loguru import logger
+from env_settings import Settings
 
-from settings import Settings
 
 BASE_DIR = Path(__file__).resolve().parent.parent
-
-Settings = Settings()
-
 SECRET_KEY = Settings.DJANGO_SECRET_KEY
 DEBUG = Settings.DJANGO_DEBUG
 ALLOWED_HOSTS = Settings.DJANGO_ALLOWED_HOSTS.split(",")
@@ -111,6 +108,8 @@ CELERY_BROKER_URL = Settings.CELERY_BROKER_URL
 CELERY_RESULT_BACKEND = Settings.CELERY_RESULT_BACKEND
 CELERY_ACCEPT_CONTENT = ["json"]
 CELERY_TASK_SERIALIZER = "json"
+CELERY_TASK_ALWAYS_EAGER = True
+CELERY_TASK_EAGER_PROPAGATES = True
 CELERY_RESULT_SERIALIZER = "json"
 CELERY_TIMEZONE = Settings.TZ
 

@@ -24,7 +24,7 @@ def test_generate_monthly_reports(
 ) -> None:
     from games import tasks
 
-    tasks.REPORTS_DIR = tmp_path
+    tasks.REPORTS_DIR = str(tmp_path)
     tasks.get_last_month_range = lambda: (
         make_aware(datetime.now() - timedelta(days=1)),
         make_aware(datetime.now() + timedelta(days=1)),
@@ -48,7 +48,7 @@ def test_generate_session_ratio(
 ) -> None:
     from games import tasks
 
-    tasks.REPORTS_DIR = tmp_path
+    tasks.REPORTS_DIR = str(tmp_path)
     result = generate_session_ratio()
     assert result is not None, "Session ratio report generation failed"
     ratio_files = [f for f in os.listdir(tmp_path) if f.startswith("session_ratio_")]
@@ -69,7 +69,7 @@ def test_generate_session_ratio(
 def test_monthly_report_score_sum(tmp_path: Path) -> None:
     from games import tasks
 
-    tasks.REPORTS_DIR = tmp_path
+    tasks.REPORTS_DIR = str(tmp_path)
     tasks.get_last_month_range = lambda: (
         make_aware(datetime.now() - timedelta(days=1)),
         make_aware(datetime.now() + timedelta(days=1)),
@@ -94,7 +94,7 @@ def test_monthly_report_score_sum(tmp_path: Path) -> None:
 def test_session_ratio_logic(tmp_path: Path) -> None:
     from games import tasks
 
-    tasks.REPORTS_DIR = tmp_path
+    tasks.REPORTS_DIR = str(tmp_path)
     user = User.objects.create(username="ratio_tester")
     game = Game.objects.create(name="Ratio Game", language="EN", category="Logic")
     for is_completed in [True, True, False]:

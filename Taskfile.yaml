@@ -13,9 +13,10 @@ tasks:
       - docker compose up --build
 
   lint:
-    desc: Run linters
+    desc: Run linters (ruff + mypy)
     cmds:
       - uv run ruff check --fix --config=pyproject.toml
+      - uv run mypy .
 
   format:
     desc: Run formatter
