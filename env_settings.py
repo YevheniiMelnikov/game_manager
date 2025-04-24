@@ -51,4 +51,5 @@ class Settings:
     CELERY_RESULT_BACKEND: str = must_getenv("CELERY_RESULT_BACKEND")
 
     TZ: str = must_getenv("TZ")
+    ENV: str = must_getenv("ENV")
     CSRF_TRUSTED_ORIGINS: str = must_getenv("CSRF_TRUSTED_ORIGINS")

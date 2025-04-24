@@ -1,7 +1,27 @@
 from django.apps import AppConfig
-
-from env_settings import Settings
+from django.db.models.signals import post_migrate
+from django.conf import settings
+from django.contrib.auth import get_user_model
 from loguru import logger
+
+
+def create_superuser(sender, **kwargs):
+    User = get_user_model()
+    username = settings.DJANGO_SUPERUSER_USERNAME
+    password = settings.DJANGO_SUPERUSER_PASSWORD
+
+    if not username or not password:
+        logger.warning("Superuser credentials not provided")
+        return
+
+    _, created = User.objects.get_or_create(
+        username=username,
+        defaults={"is_superuser": True, "is_staff": True, "password": password},
+    )
+    if created:
+        logger.success(f"Superuser '{username}' created")
+    else:
+        logger.info(f"Superuser '{username}' already exists")
 
 
 class GamesConfig(AppConfig):
@@ -9,16 +29,4 @@ class GamesConfig(AppConfig):
     name = "games"
 
     def ready(self):
-        from django.contrib.auth import get_user_model
-        from django.db.utils import OperationalError
-
-        User = get_user_model()
-
-        try:
-            username = Settings.DJANGO_SUPERUSER_USERNAME
-            password = Settings.DJANGO_SUPERUSER_PASSWORD
-
-            if username and password and not User.objects.filter(username=username).exists():
-                User.objects.create_superuser(username=username, password=password)
-        except OperationalError:
-            logger.error("Database not ready")
+        post_migrate.connect(create_superuser, sender=self)

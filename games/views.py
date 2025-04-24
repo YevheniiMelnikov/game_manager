@@ -24,6 +24,10 @@ from .serializers import (
 from .forms import RegistrationForm
 
 User = get_user_model()
+USER_TABLE = User._meta.db_table
+GROUP_TABLE = Group._meta.db_table
+LINK_TABLE = f"{USER_TABLE}_groups"
+LINK_USER_COL = f"{User._meta.model_name}_id"
 
 
 class CompanyViewSet(viewsets.ModelViewSet):
@@ -63,7 +67,8 @@ class RegisterView(APIView):
         with transaction.atomic():
             with connection.cursor() as cursor:
                 cursor.execute(
-                    "INSERT INTO auth_user_groups (user_id, group_id) SELECT %s, id FROM auth_group WHERE name=%s",
+                    f"INSERT INTO {LINK_TABLE} ({LINK_USER_COL}, group_id) "
+                    "SELECT %s, id FROM {group_table} WHERE name=%s".format(group_table=GROUP_TABLE),
                     [user.id, user.role],
                 )
         login(request, user)
@@ -86,8 +91,7 @@ class LoginView(APIView):
 
 class UserRegistrationView(View):
     def get(self, request):
-        form = RegistrationForm()
-        return render(request, "games/register.html", {"form": form})
+        return render(request, "games/register.html", {"form": RegistrationForm()})
 
     def post(self, request):
         form = RegistrationForm(request.POST)
@@ -96,37 +100,34 @@ class UserRegistrationView(View):
                 for err in errs:
                     messages.error(request, f"{field}: {err}")
             return render(request, "games/register.html", {"form": form})
+
         data = form.cleaned_data
+
         with transaction.atomic():
+            company = None
+            if data.get("company_id"):
+                company, _ = Company.objects.get_or_create(
+                    id=data["company_id"], defaults={"name": f"Company {data['company_id']}"}
+                )
+            else:
+                company, _ = Company.objects.get_or_create(name="Default Company")
+
             user = User.objects.create_user(
                 username=data["username"],
                 password=data["password"],
                 role=data["role"],
-                company_id=data.get("company_id"),
+                company=company,
                 is_active=True,
             )
+
             group, _ = Group.objects.get_or_create(name=data["role"])
-            user.groups.add(group)
+
             with connection.cursor() as cursor:
                 cursor.execute(
-                    "INSERT INTO auth_user (username, password, is_active, date_joined) VALUES (%s, %s, %s, NOW())",
-                    [data["username"], user.password, True],
+                    f"INSERT INTO {LINK_TABLE} ({LINK_USER_COL}, group_id) VALUES (%s, %s)",
+                    [user.id, group.id],
                 )
-                cursor.execute(
-                    "SELECT id FROM auth_user WHERE username=%s ORDER BY date_joined DESC LIMIT 1",
-                    [data["username"]],
-                )
-                raw_user_id = cursor.fetchone()[0]
-                cursor.execute(
-                    "INSERT INTO auth_group (name) SELECT %s WHERE NOT EXISTS (SELECT 1 FROM auth_group WHERE name=%s)",
-                    [data["role"], data["role"]],
-                )
-                cursor.execute("SELECT id FROM auth_group WHERE name=%s", [data["role"]])
-                raw_group_id = cursor.fetchone()[0]
-                cursor.execute(
-                    "INSERT INTO auth_user_groups (user_id, group_id) VALUES (%s, %s)",
-                    [raw_user_id, raw_group_id],
-                )
+
         login(request, user)
         messages.success(request, "Registration successful")
         return redirect("register_success")

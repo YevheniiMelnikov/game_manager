@@ -51,11 +51,6 @@ docker compose up
 docker compose exec web pytest
 ```
 
-Test suite includes coverage for:
-- Celery task reports (ORM + raw SQL)
-- Game and session models
-- User roles and registration
-
 ---
 
 ## 📊 Background Tasks
@@ -65,19 +60,30 @@ Powered by Celery & django-celery-beat:
 - `generate_monthly_reports`: Aggregates participant scores for each game in the previous month
 - `generate_session_ratio`: Calculates session completion/failure rates
 
-Raw SQL alternatives included for performance testing and analytics accuracy comparison.
-
 ---
 
 ## 🌐 Web Interface
 
-Minimalist web-based user registration is available at:
+**Web-based user registration is available at:**
 
 ```
 http://localhost:8080/register/
 ```
+![Registration page](readme%20images/register.png)
 
-Useful for manually onboarding users with specific roles (SuperAdmin, CompanyAdmin, etc.)
+**Admin panel is available at:**
+
+```
+http://localhost:8080/admin/
+```
+*Note: Use the credentials provided in the `.env` file.*
+![Django admin](readme%20images/admin.png)
+
+**Docs are available at:**
+
+```
+http://localhost:8080/docs/
+```
 
 ---
 

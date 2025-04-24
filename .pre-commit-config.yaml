@@ -31,6 +31,7 @@ repos:
         entry: uv run pytest
         language: system
         types: [python]
+        pass_filenames: false
 
 default_language_version:
   python: python3.13

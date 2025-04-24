@@ -27,9 +27,8 @@ class Command(BaseCommand):
 
     def handle(self, *args, **options):
         fixtures = []
-
-        # 1) Компании
         companies = []
+        Company.objects.filter(name__startswith="Company").delete()
         for i in range(1, COMPANY_COUNT + 1):
             company = Company.objects.create(name=f"Company {i}")
             companies.append(company)

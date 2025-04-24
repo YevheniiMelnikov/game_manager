@@ -1,13 +1,16 @@
-#!/bin/sh
+#!/usr/bin/env sh
+set -e
 
-echo "▶ Applying database migrations..."
-python manage.py migrate || exit 1
+if [ "${RUN_MIGRATIONS}" = "true" ]; then
+  echo "▶ Applying database migrations..."
+  python manage.py migrate --noinput
 
-echo "▶ Collecting static files..."
-python manage.py collectstatic --noinput
+  echo "▶ Collecting static files..."
+  python manage.py collectstatic --noinput
 
-echo "▶ Creating user roles..."
-python manage.py init_roles || echo "Could not create roles"
+  echo "▶ Creating user roles..."
+  python manage.py init_roles || echo "Could not create roles"
+fi
 
-echo "▶ Starting server..."
-exec uvicorn game_management.asgi:application --host 0.0.0.0 --port 8000
+echo "▶ Starting: $*"
+exec "$@"

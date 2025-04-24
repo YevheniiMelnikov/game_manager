@@ -24,6 +24,7 @@ INSTALLED_APPS = [
     "django.contrib.messages",
     "django.contrib.staticfiles",
     "rest_framework",
+    "drf_spectacular",
     "django_celery_beat",
 ]
 
@@ -44,6 +45,13 @@ REST_FRAMEWORK = {
     "DEFAULT_PERMISSION_CLASSES": [
         "rest_framework.permissions.IsAuthenticated",
     ],
+    "DEFAULT_SCHEMA_CLASS": "drf_spectacular.openapi.AutoSchema",
+}
+
+SPECTACULAR_SETTINGS = {
+    "TITLE": "GameManager API",
+    "DESCRIPTION": "GameManager app API documentation",
+    "VERSION": "1.0.0",
 }
 
 ROOT_URLCONF = "game_management.urls"
@@ -66,7 +74,7 @@ TEMPLATES = [
 
 ASGI_APPLICATION = "game_management.asgi.application"
 
-if os.getenv("ENV", "dev") == "dev":
+if Settings.ENV == "dev":
     DATABASES = {
         "default": {
             "ENGINE": "django.db.backends.sqlite3",
@@ -145,3 +153,6 @@ logger.configure(
         },
     ]
 )
+
+DJANGO_SUPERUSER_USERNAME = Settings.DJANGO_SUPERUSER_USERNAME
+DJANGO_SUPERUSER_PASSWORD = Settings.DJANGO_SUPERUSER_PASSWORD

@@ -1,97 +1,86 @@
 services:
   web:
     container_name: game_management_api
-    build:
-      context: .
-      dockerfile: Dockerfile
-    env_file:
-      - .env
+    build: .
+    env_file: .env
+    environment:
+      RUN_MIGRATIONS: "true"
+    command: >
+      /app/entrypoint.sh
+      uvicorn game_management.asgi:application
+      --host 0.0.0.0 --port 8000
     ports:
       - "8000:8000"
     depends_on:
-      db:
-        condition: service_healthy
-      redis:
-        condition: service_healthy
+      db:    {condition: service_healthy}
+      redis: {condition: service_healthy}
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8000/health/"]
       interval: 10s
       timeout: 5s
       retries: 3
     restart: unless-stopped
-    networks:
-      - game_manager
     volumes:
       - staticfiles:/app/staticfiles
+    networks: [game_manager]
 
   celery:
     container_name: celery_worker
-    build:
-      context: .
-      dockerfile: Dockerfile
-    command: celery -A settings worker -l info
-    env_file:
-      - .env
+    build: .
+    env_file: .env
+    environment:
+      RUN_MIGRATIONS: "false"
+    command: >
+      /app/entrypoint.sh
+      celery -A game_management worker -l info
     depends_on:
-      db:
-        condition: service_healthy
-      redis:
-        condition: service_healthy
+      db:    {condition: service_healthy}
+      redis: {condition: service_healthy}
     restart: unless-stopped
-    networks:
-      - game_manager
+    networks: [game_manager]
 
   celery_beat:
     container_name: celery_beat
-    build:
-      context: .
-      dockerfile: Dockerfile
-    command: celery -A settings beat -l info
-    env_file:
-      - .env
+    build: .
+    env_file: .env
+    environment:
+      RUN_MIGRATIONS: "false"
+    command: >
+      /app/entrypoint.sh
+      celery -A game_management beat -l info
     depends_on:
-      db:
-        condition: service_healthy
-      redis:
-        condition: service_healthy
+      db:    {condition: service_healthy}
+      redis: {condition: service_healthy}
     restart: unless-stopped
-    networks:
-      - game_manager
+    networks: [game_manager]
 
   db:
     image: postgres:17
     container_name: db
-    env_file:
-      - .env
-    ports:
-      - "5432:5432"
-    volumes:
-      - pgdata:/var/lib/postgresql/data
+    env_file: .env
+    ports: ["5432:5432"]
+    volumes: [pgdata:/var/lib/postgresql/data]
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-postgres}"]
       interval: 10s
       timeout: 5s
       retries: 5
     restart: unless-stopped
-    networks:
-      - game_manager
+    networks: [game_manager]
 
   redis:
     image: redis:7.4.2
     container_name: redis
-    ports:
-      - "6379:6379"
-    volumes:
-      - redisdata:/data
     command: ["redis-server", "--appendonly", "yes"]
+    ports: ["6379:6379"]
+    volumes: [redisdata:/data]
     healthcheck:
       test: ["CMD", "redis-cli", "ping"]
       interval: 10s
       timeout: 5s
       retries: 3
     restart: unless-stopped
-    networks:
-      - game_manager
+    networks: [game_manager]
 
   nginx:
     image: nginx:latest
@@ -104,11 +93,9 @@ services:
       - /etc/letsencrypt:/etc/letsencrypt:ro
       - staticfiles:/opt/api/staticfiles:ro
     depends_on:
-      web:
-        condition: service_healthy
+      web: {condition: service_healthy}
     restart: unless-stopped
-    networks:
-      - game_manager
+    networks: [game_manager]
 
 volumes:
   pgdata:

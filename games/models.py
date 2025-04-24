@@ -8,6 +8,10 @@ class Company(models.Model):
     def __str__(self) -> str:
         return self.name
 
+    class Meta:
+        verbose_name = "Company"
+        verbose_name_plural = "Companies"
+
 
 class CustomUser(AbstractUser):
     ROLE_CHOICES = [
@@ -57,6 +61,10 @@ class Game(models.Model):
             "failure_ratio": round(failed_sessions / total_sessions, 2) if total_sessions else 0,
         }
 
+    class Meta:
+        verbose_name = "Game"
+        verbose_name_plural = "Games"
+
 
 class GameSession(models.Model):
     STATUS_CHOICES = [
@@ -72,6 +80,8 @@ class GameSession(models.Model):
 
     class Meta:
         ordering = ["-start_datetime"]
+        verbose_name = "Game Session"
+        verbose_name_plural = "Game Sessions"
 
     def __str__(self) -> str:
         return f"Session of {self.game.name} at {self.start_datetime}"
@@ -84,3 +94,7 @@ class GameResults(models.Model):
 
     def __str__(self) -> str:
         return f"Result for session {self.game_session.id} - Score: {self.score}"
+
+    class Meta:
+        verbose_name = "Game Result"
+        verbose_name_plural = "Game Results"
