@@ -1,11 +1,8 @@
 import os
-import sys
-from datetime import timedelta
 from pathlib import Path
 
-from celery import Celery
-from loguru import logger
-from env_settings import Settings
+from config.logger import *
+from config.celery import *
 
 
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -13,10 +10,13 @@ SECRET_KEY = Settings.DJANGO_SECRET_KEY
 DEBUG = Settings.DJANGO_DEBUG
 ALLOWED_HOSTS = Settings.DJANGO_ALLOWED_HOSTS.split(",")
 AUTH_USER_MODEL = "games.CustomUser"
+DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
+DJANGO_SUPERUSER_USERNAME = Settings.DJANGO_SUPERUSER_USERNAME
+DJANGO_SUPERUSER_PASSWORD = Settings.DJANGO_SUPERUSER_PASSWORD
 
 INSTALLED_APPS = [
     "jet",
-    "games.apps.GamesConfig",
+    "apps.games.apps.GamesConfig",
     "django.contrib.admin",
     "django.contrib.auth",
     "django.contrib.contenttypes",
@@ -54,7 +54,7 @@ SPECTACULAR_SETTINGS = {
     "VERSION": "1.0.0",
 }
 
-ROOT_URLCONF = "game_management.urls"
+ROOT_URLCONF = "config.urls"
 
 TEMPLATES = [
     {
@@ -72,7 +72,7 @@ TEMPLATES = [
     },
 ]
 
-ASGI_APPLICATION = "game_management.asgi.application"
+ASGI_APPLICATION = "config.asgi.application"
 
 if Settings.ENV == "dev":
     DATABASES = {
@@ -106,53 +106,3 @@ TIME_ZONE = Settings.TZ
 USE_I18N = True
 USE_L10N = True
 USE_TZ = True
-
-DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
-
-app = Celery("game_management")
-app.config_from_object("django.conf:settings", namespace="CELERY")
-app.autodiscover_tasks()
-CELERY_BROKER_URL = Settings.CELERY_BROKER_URL
-CELERY_RESULT_BACKEND = Settings.CELERY_RESULT_BACKEND
-CELERY_ACCEPT_CONTENT = ["json"]
-CELERY_TASK_SERIALIZER = "json"
-CELERY_TASK_ALWAYS_EAGER = True
-CELERY_TASK_EAGER_PROPAGATES = True
-CELERY_RESULT_SERIALIZER = "json"
-CELERY_TIMEZONE = Settings.TZ
-
-CELERY_BEAT_SCHEDULE = {
-    "generate_monthly_reports": {
-        "task": "games.tasks.generate_monthly_reports",
-        "schedule": timedelta(days=1),
-    },
-    "generate_session_ratio": {
-        "task": "games.tasks.generate_session_ratio",
-        "schedule": timedelta(days=1),
-    },
-}
-
-logger.remove()
-logger.configure(
-    handlers=[
-        {
-            "sink": sys.stdout,
-            "level": Settings.DJANGO_LOG_LEVEL,
-            "format": "<green>{time:YYYY-MM-DD HH:mm:ss}</green> | <level>{level}</level> | <cyan>{name}</cyan>:<cyan>{function}</cyan>:<cyan>{line}</cyan> - <level>{message}</level>",  # noqa
-            "colorize": True,
-        },
-        {
-            "sink": "game_management.log",
-            "level": "INFO",
-            "serialize": False,
-            "format": "{time:YYYY-MM-DD HH:mm:ss} | {level} | {name}:{function}:{line} - {message}",
-            "rotation": "100 MB",
-            "retention": "30 days",
-            "compression": "zip",
-            "enqueue": True,
-        },
-    ]
-)
-
-DJANGO_SUPERUSER_USERNAME = Settings.DJANGO_SUPERUSER_USERNAME
-DJANGO_SUPERUSER_PASSWORD = Settings.DJANGO_SUPERUSER_PASSWORD

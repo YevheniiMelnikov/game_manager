@@ -22,7 +22,7 @@ class CustomUser(AbstractUser):
     company = models.ForeignKey(Company, on_delete=models.SET_NULL, null=True, blank=True)
     role = models.CharField(max_length=20, choices=ROLE_CHOICES, default="Participant")
 
-    def get_session_metrics(self) -> dict:
+    def get_sessions_metrics(self) -> dict:
         sessions_qs = self.game_sessions.all()
         total_sessions = sessions_qs.count()
         completed_sessions = sessions_qs.filter(results__is_completed=True).distinct().count()
@@ -51,13 +51,12 @@ class Game(models.Model):
     def get_session_metrics(self) -> dict:
         sessions_qs = self.sessions.all()
         total_sessions = sessions_qs.count()
-        completed_sessions = sessions_qs.filter(results__is_completed=True).distinct().count()
-        failed_sessions = total_sessions - completed_sessions
+        failed_sessions = total_sessions - self.completed_sessions
         return {
-            "completed": completed_sessions,
+            "completed": self.completed_sessions,
             "failed": failed_sessions,
             "total": total_sessions,
-            "completion_ratio": round(completed_sessions / total_sessions, 2) if total_sessions else 0,
+            "completion_ratio": round(self.completed_sessions / total_sessions, 2) if total_sessions else 0,
             "failure_ratio": round(failed_sessions / total_sessions, 2) if total_sessions else 0,
         }
 

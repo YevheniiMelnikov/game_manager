@@ -3,7 +3,7 @@ from django.http import HttpResponse
 from django.urls import path, include
 from drf_spectacular.views import SpectacularAPIView, SpectacularSwaggerView, SpectacularRedocView
 from rest_framework.routers import DefaultRouter
-from games.views import (
+from apps.games.views import (
     CompanyViewSet,
     GameViewSet,
     GameSessionViewSet,

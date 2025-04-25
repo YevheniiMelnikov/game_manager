@@ -5,8 +5,8 @@ from typing import Any
 
 import pytest
 from django.contrib.auth import get_user_model
-from games.models import Game, GameSession, GameResults
-from games.tasks import generate_monthly_reports, generate_session_ratio
+from apps.games.models import Game, GameSession, GameResults
+from apps.games.tasks import generate_monthly_reports, generate_session_ratio
 from datetime import datetime, timedelta
 from django.utils.timezone import make_aware
 
@@ -22,7 +22,7 @@ def read_report(filepath: Path) -> dict[str, Any]:
 def test_generate_monthly_reports(
     tmp_path: Path, game: Game, game_session: GameSession, game_result: GameResults
 ) -> None:
-    from games import tasks
+    from apps.games import tasks
 
     tasks.REPORTS_DIR = str(tmp_path)
     tasks.get_last_month_range = lambda: (
@@ -46,7 +46,7 @@ def test_generate_monthly_reports(
 def test_generate_session_ratio(
     tmp_path: Path, game: Game, game_session: GameSession, game_result: GameResults
 ) -> None:
-    from games import tasks
+    from apps.games import tasks
 
     tasks.REPORTS_DIR = str(tmp_path)
     result = generate_session_ratio()
@@ -67,7 +67,7 @@ def test_generate_session_ratio(
 
 @pytest.mark.django_db
 def test_monthly_report_score_sum(tmp_path: Path) -> None:
-    from games import tasks
+    from apps.games import tasks
 
     tasks.REPORTS_DIR = str(tmp_path)
     tasks.get_last_month_range = lambda: (
@@ -92,7 +92,7 @@ def test_monthly_report_score_sum(tmp_path: Path) -> None:
 
 @pytest.mark.django_db
 def test_session_ratio_logic(tmp_path: Path) -> None:
-    from games import tasks
+    from apps.games import tasks
 
     tasks.REPORTS_DIR = str(tmp_path)
     user = User.objects.create(username="ratio_tester")

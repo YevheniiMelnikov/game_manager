@@ -66,11 +66,6 @@ Powered by Celery & django-celery-beat:
 
 **Web-based user registration is available at:**
 
-```
-http://localhost:8080/register/
-```
-![Registration page](readme%20images/register.png)
-
 **Admin panel is available at:**
 
 ```

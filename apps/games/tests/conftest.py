@@ -3,11 +3,11 @@ import django
 import pytest
 from dotenv import load_dotenv
 from django.contrib.auth import get_user_model
-from games.models import Game, GameSession, GameResults, CustomUser
+from apps.games.models import Game, GameSession, GameResults, CustomUser
 from django.utils.timezone import make_aware
 from datetime import datetime
 
-os.environ.setdefault("DJANGO_SETTINGS_MODULE", "game_management.settings")
+os.environ.setdefault("DJANGO_SETTINGS_MODULE", "config.settings")
 load_dotenv()
 django.setup()
 

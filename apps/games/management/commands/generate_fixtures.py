@@ -6,7 +6,7 @@ from django.core.management.base import BaseCommand
 from django.contrib.auth import get_user_model
 from django.utils.timezone import now
 
-from games.models import Company, Game, GameSession, GameResults
+from apps.games.models import Company, Game, GameSession, GameResults
 
 FIXTURES_DIR = os.path.join("games", "fixtures")
 os.makedirs(FIXTURES_DIR, exist_ok=True)

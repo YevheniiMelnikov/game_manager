@@ -56,7 +56,7 @@ def generate_monthly_reports() -> dict[str, Any]:
 def generate_session_ratio() -> dict[str, Any]:
     report: dict[str, Any] = {
         "by_game": {g.name: g.get_session_metrics() for g in Game.objects.all()},
-        "by_participant": {u.username: u.get_session_metrics() for u in User.objects.all()},
+        "by_participant": {u.username: u.get_sessions_metrics() for u in User.objects.all()},
     }
 
     agg = GameSession.objects.aggregate(
