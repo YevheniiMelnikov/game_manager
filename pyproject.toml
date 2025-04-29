@@ -46,7 +46,7 @@ exclude = [
     "env",
     "venv",
     ".venv",
-    ".vene-win"
+    ".venv-win"
 ]
 
 [tool.ruff.lint]
@@ -62,4 +62,4 @@ plugins = []
 
 ignore_missing_imports = true
 strict_optional = true
-exclude = '(\.venv|\.env|env|venv|\.mypy_cache|\.pytest_cache|\.git)'
+exclude = '(\.venv|\.venv-win|\.env|env|venv|\.mypy_cache|\.pytest_cache|\.git)'
