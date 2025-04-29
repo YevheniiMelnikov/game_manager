@@ -11,8 +11,8 @@ class SessionMetrics(BaseModel):
 
 
 class ParticipantReport(BaseModel):
-    game_session__participants__id: int
-    game_session__participants__username: str
+    game_session_participants_id: int
+    game_session_participants_username: str
     total_score: int
 
 

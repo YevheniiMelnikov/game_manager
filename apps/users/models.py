@@ -16,16 +16,34 @@ class User(AbstractUser):
     created = models.DateTimeField(auto_now_add=True)
     updated = models.DateTimeField(auto_now=True)
 
-    def get_sessions_metrics(self) -> SessionMetrics:
-        sessions_qs = self.game_sessions.all()
-        total = sessions_qs.count()
-        completed = sessions_qs.filter(results__is_completed=True).distinct().count()
-        failed = total - completed
+    @property
+    def total_sessions(self) -> int:
+        return self.game_sessions.count()
 
+    @property
+    def completed_sessions(self) -> int:
+        return self.game_sessions.filter(results__is_completed=True).distinct().count()
+
+    @property
+    def failed_sessions(self) -> int:
+        return self.game_sessions.exclude(results__is_completed=True).distinct().count()
+
+    @property
+    def completion_ratio(self) -> float:
+        total = self.total_sessions
+        return round(self.completed_sessions / total, 2) if total else 0
+
+    @property
+    def failure_ratio(self) -> float:
+        total = self.total_sessions
+        return round(self.failed_sessions / total, 2) if total else 0
+
+    def get_sessions_metrics(self) -> SessionMetrics:
+        total = self.total_sessions
         return SessionMetrics(
-            completed=completed,
-            failed=failed,
+            completed=self.completed_sessions,
+            failed=self.failed_sessions,
             total=total,
-            completion_ratio=round(completed / total, 2) if total else 0,
-            failure_ratio=round(failed / total, 2) if total else 0,
+            completion_ratio=self.completion_ratio,
+            failure_ratio=self.failure_ratio,
         )

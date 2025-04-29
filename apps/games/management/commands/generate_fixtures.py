@@ -28,12 +28,14 @@ class Command(BaseCommand):
     def handle(self, *args, **options):
         fixtures = []
 
-        # Companies
+        # companies
         Company.objects.filter(name__startswith="Company").delete()
-        companies = [Company.objects.create(name=f"Company {i}") for i in range(1, self.COMPANY_COUNT + 1)]
+        companies: list[Company] = [
+            Company.objects.create(name=f"Company {i}") for i in range(1, self.COMPANY_COUNT + 1)
+        ]
         fixtures += [{"model": "games.company", "pk": c.pk, "fields": {"name": c.name}} for c in companies]
 
-        # Users
+        # users
         users = []
         for i in range(1, self.USER_COUNT + 1):
             role = random.choice(self.ROLE_CHOICES)
@@ -60,7 +62,7 @@ class Command(BaseCommand):
                 }
             )
 
-        # Games
+        # games
         games = [
             Game.objects.create(
                 name=f"Game {i}",
@@ -82,14 +84,14 @@ class Command(BaseCommand):
             for g in games
         ]
 
-        # Sessions and Results
+        # sessions and results
         for _ in range(self.SESSION_COUNT):
             game = random.choice(games)
             session = GameSession.objects.create(
                 game=game,
                 start_datetime=now(),
             )
-            participant_ids = random.sample([u.pk for u in users], k=random.randint(1, min(5, len(users))))
+            participant_ids: list[int] = random.sample([u.pk for u in users], k=random.randint(1, min(5, len(users))))
             session.participants.set(participant_ids)
 
             GameResults.objects.create(

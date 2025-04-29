@@ -5,7 +5,6 @@ from pytest_factoryboy import register
 from apps.games.tests.factories import GameFactory, GameSessionFactory, GameResultsFactory
 from apps.users.tests.factories import UserFactory
 
-
 register(UserFactory)
 register(GameFactory)
 register(GameSessionFactory)
@@ -19,6 +18,6 @@ def freeze_time(freezer):
 
 @pytest.fixture(autouse=True)
 def patch_reports_dir(tmp_path, monkeypatch):
-    from apps.games import tasks
+    from apps.games import utils
 
-    monkeypatch.setattr(tasks, "REPORTS_DIR", str(tmp_path))
+    monkeypatch.setattr(utils, "REPORTS_DIR", str(tmp_path))

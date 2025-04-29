@@ -54,7 +54,7 @@ def test_monthly_report_score_sum(user) -> None:
     report = generate_monthly_reports()
     participants = report[game.name]["participants"]
     total_score = sum(
-        p["total_score"] for p in participants if p["game_session__participants__username"] == user.username
+        p["total_score"] for p in participants if p["game_session_participants_username"] == user.username
     )
 
     assert total_score == 500

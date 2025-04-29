@@ -1,9 +1,9 @@
 [project]
 name = "gamemanager"
 version = "0.1.0"
-description = ""
+description = "Django GameManager"
 authors = [
-    { name = "Yevhenii Melnykov", email = "yevhenii.melnykov@codeit.local" }
+    { name = "Yevhenii Melnykov", email = "evgeniy@workmail.com" }
 ]
 readme = "README.md"
 dependencies = [

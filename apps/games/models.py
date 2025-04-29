@@ -22,18 +22,32 @@ class Game(models.Model):
     def completed_sessions(self) -> int:
         return self.sessions.filter(results__is_completed=True).distinct().count()
 
-    def get_session_metrics(self) -> SessionMetrics:
-        sessions_qs = self.sessions.all()
-        total_sessions = sessions_qs.count()
-        completed_sessions = self.completed_sessions
-        failed_sessions = total_sessions - completed_sessions
+    @property
+    def total_sessions(self) -> int:
+        return self.sessions.count()
 
+    @property
+    def failed_sessions(self) -> int:
+        return self.sessions.exclude(results__is_completed=True).distinct().count()
+
+    @property
+    def completion_ratio(self) -> float:
+        total = self.total_sessions
+        return round(self.completed_sessions / total, 2) if total else 0
+
+    @property
+    def failure_ratio(self) -> float:
+        total = self.total_sessions
+        return round(self.failed_sessions / total, 2) if total else 0
+
+    def get_session_metrics(self) -> SessionMetrics:
+        total = self.total_sessions
         return SessionMetrics(
-            completed=completed_sessions,
-            failed=failed_sessions,
-            total=total_sessions,
-            completion_ratio=round(completed_sessions / total_sessions, 2) if total_sessions else 0,
-            failure_ratio=round(failed_sessions / total_sessions, 2) if total_sessions else 0,
+            completed=self.completed_sessions,
+            failed=self.failed_sessions,
+            total=total,
+            completion_ratio=round(self.completed_sessions / total, 2) if total else 0,
+            failure_ratio=round(self.failed_sessions / total, 2) if total else 0,
         )
 
     class Meta:
