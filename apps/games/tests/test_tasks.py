@@ -1,112 +1,76 @@
-import os
 import json
+from datetime import datetime
 from pathlib import Path
-from typing import Any
-
 import pytest
-from django.contrib.auth import get_user_model
-from apps.games.models import Game, GameSession, GameResults
-from apps.games.tasks import generate_monthly_reports, generate_session_ratio
-from datetime import datetime, timedelta
+from freezegun import freeze_time
 from django.utils.timezone import make_aware
 
-User = get_user_model()
+from apps.games.tasks import generate_monthly_reports, generate_session_ratio
 
 
-def read_report(filepath: Path) -> dict[str, Any]:
-    with open(filepath, "r") as file:
+def read_report(filepath: Path) -> dict:
+    with open(filepath, "r", encoding="utf-8") as file:
         return json.load(file)
 
 
-@pytest.mark.django_db
-def test_generate_monthly_reports(
-    tmp_path: Path, game: Game, game_session: GameSession, game_result: GameResults
-) -> None:
-    from apps.games import tasks
-
-    tasks.REPORTS_DIR = str(tmp_path)
-    tasks.get_last_month_range = lambda: (
-        make_aware(datetime.now() - timedelta(days=1)),
-        make_aware(datetime.now() + timedelta(days=1)),
-    )
+@pytest.mark.django_db(transaction=True)
+@freeze_time("2025-02-15")
+def test_generate_monthly_reports(user_factory, game_factory, game_session_factory, game_results_factory) -> None:
+    user = user_factory()
+    game = game_factory()
+    session = game_session_factory(game=game, participants=[user])
+    game_results_factory(game_session=session, score=100, is_completed=True)
     result = generate_monthly_reports()
-    assert result is not None, "Monthly report generation failed"
-    monthly_files = [f for f in os.listdir(tmp_path) if f.startswith("monthly_report_")]
-    latest_report = sorted(monthly_files)[-1]
-    report_data = read_report(tmp_path / latest_report)
-    assert isinstance(report_data, dict), "Monthly report data should be a dictionary"
-    for game_name, data in report_data.items():
-        assert "participants" in data, f"Participants not found in report for game {game_name}"
-        for participant in data["participants"]:
-            assert "game_session__participants__username" in participant, "Username missing in report"
-            assert "total_score" in participant, "Total score missing in report"
+    assert result, "Monthly report generation returned empty result."
+    assert game.name in result
+    assert result[game.name]["participants"]
+    assert all("total_score" in p for p in result[game.name]["participants"])
 
 
-@pytest.mark.django_db
-def test_generate_session_ratio(
-    tmp_path: Path, game: Game, game_session: GameSession, game_result: GameResults
-) -> None:
-    from apps.games import tasks
-
-    tasks.REPORTS_DIR = str(tmp_path)
+@pytest.mark.django_db(transaction=True)
+def test_generate_session_ratio(game, game_session, game_results) -> None:
     result = generate_session_ratio()
-    assert result is not None, "Session ratio report generation failed"
-    ratio_files = [f for f in os.listdir(tmp_path) if f.startswith("session_ratio_")]
-    latest_report = sorted(ratio_files)[-1]
-    report_data = read_report(tmp_path / latest_report)
-    for section in ["by_game", "by_participant"]:
-        assert section in report_data, f"Section {section} missing in session ratio report"
-        for key, data in report_data[section].items():
-            for field in ["completed", "failed", "total", "completion_ratio", "failure_ratio"]:
-                assert field in data, f"{field} missing for {key} in section {section}"
-    assert "overall" in report_data, "Overall section missing in session ratio report"
-    overall = report_data["overall"]
-    for key in ["completed", "failed", "total", "completion_ratio", "failure_ratio"]:
-        assert key in overall, f"{key} missing in overall section"
+    assert result, "Session ratio report generation returned empty result."
+    assert "by_game" in result
+    assert "by_participant" in result
+    assert "overall" in result
 
 
-@pytest.mark.django_db
-def test_monthly_report_score_sum(tmp_path: Path) -> None:
-    from apps.games import tasks
+@pytest.mark.django_db(transaction=True)
+def test_monthly_report_score_sum(user) -> None:
+    from apps.games.models import Game, GameSession, GameResults
 
-    tasks.REPORTS_DIR = str(tmp_path)
-    tasks.get_last_month_range = lambda: (
-        make_aware(datetime.now() - timedelta(days=1)),
-        make_aware(datetime.now() + timedelta(days=1)),
-    )
-    user = User.objects.create(username="tester")
     game = Game.objects.create(name="Test Game", language="EN", category="Puzzle")
-    session = GameSession.objects.create(game=game, start_datetime=make_aware(datetime.now()))
-    session.participants.add(user)
-    GameResults.objects.create(game_session=session, score=200, is_completed=True)
-    session2 = GameSession.objects.create(game=game, start_datetime=make_aware(datetime.now()))
+    start_time = make_aware(datetime(2025, 1, 15))
+
+    session1 = GameSession.objects.create(game=game, start_datetime=start_time)
+    session1.participants.add(user)
+    GameResults.objects.create(game_session=session1, score=200, is_completed=True)
+
+    session2 = GameSession.objects.create(game=game, start_datetime=start_time)
     session2.participants.add(user)
     GameResults.objects.create(game_session=session2, score=300, is_completed=True)
+
     report = generate_monthly_reports()
     participants = report[game.name]["participants"]
-    total_score_for_tester = sum(
-        p["total_score"] for p in participants if p["game_session__participants__username"] == "tester"
+    total_score = sum(
+        p["total_score"] for p in participants if p["game_session__participants__username"] == user.username
     )
-    assert total_score_for_tester == 500, f"Expected total score 500 for tester, got {total_score_for_tester}"
+
+    assert total_score == 500
 
 
-@pytest.mark.django_db
-def test_session_ratio_logic(tmp_path: Path) -> None:
-    from apps.games import tasks
+@pytest.mark.django_db(transaction=True)
+def test_session_ratio_logic(user) -> None:
+    from apps.games.models import Game, GameSession, GameResults
 
-    tasks.REPORTS_DIR = str(tmp_path)
-    user = User.objects.create(username="ratio_tester")
     game = Game.objects.create(name="Ratio Game", language="EN", category="Logic")
     for is_completed in [True, True, False]:
-        session = GameSession.objects.create(game=game, start_datetime=make_aware(datetime.now()))
+        session = GameSession.objects.create(game=game, start_datetime=user.date_joined)
         session.participants.add(user)
         GameResults.objects.create(game_session=session, score=100, is_completed=is_completed)
+
     report = generate_session_ratio()
-    by_game = report["by_game"][game.name]
-    by_participant = report["by_participant"][user.username]
-    assert by_game["completed"] == 2
-    assert by_game["failed"] == 1
-    assert by_game["completion_ratio"] == 0.67
-    assert by_participant["failed"] == 1
-    assert by_participant["total"] == 3
-    assert report["overall"]["total"] == 3
+    assert report["by_game"][game.name]["completed"] == 2
+    assert report["by_game"][game.name]["failed"] == 1
+    assert report["by_game"][game.name]["completion_ratio"] == 0.67

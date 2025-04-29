@@ -8,10 +8,12 @@ WORKDIR /app
 
 COPY pyproject.toml uv.lock ./
 
-RUN uv pip install --system .
+RUN uv pip install --system ".[dev]"
 
 COPY . .
 
 RUN chmod +x /app/entrypoint.sh
+
+RUN mypy --install-types --non-interactive || true
 
 ENTRYPOINT ["/app/entrypoint.sh"]

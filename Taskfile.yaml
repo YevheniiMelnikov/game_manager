@@ -4,8 +4,8 @@ tasks:
   migrate:
     desc: Migrate db
     cmds:
-      - docker exec -it game_management_api python manage.py makemigrations
-      - docker exec -it game_management_api python manage.py migrate
+      - uv run python manage.py makemigrations
+      - uv run python manage.py migrate
 
   run:
     desc: Run application
@@ -37,7 +37,7 @@ tasks:
   test:
     desc: Run pytest with Django settings
     cmds:
-      - uv run pytest games/tests
+      - uv run pytest apps
 
   pre-commit:
     desc: Run pre-commit hooks
@@ -51,4 +51,4 @@ tasks:
     cmds:
       - uv run python manage.py migrate
       - uv run python manage.py generate_fixtures
-      - uv run python manage.py loaddata games/fixtures/test_data.json
+      - uv run python manage.py loaddata apps/games/fixtures/test_data.json

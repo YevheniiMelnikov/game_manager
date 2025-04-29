@@ -9,7 +9,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = Settings.DJANGO_SECRET_KEY
 DEBUG = Settings.DJANGO_DEBUG
 ALLOWED_HOSTS = Settings.DJANGO_ALLOWED_HOSTS.split(",")
-AUTH_USER_MODEL = "games.CustomUser"
+AUTH_USER_MODEL = "users.User"
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 DJANGO_SUPERUSER_USERNAME = Settings.DJANGO_SUPERUSER_USERNAME
 DJANGO_SUPERUSER_PASSWORD = Settings.DJANGO_SUPERUSER_PASSWORD
@@ -17,6 +17,7 @@ DJANGO_SUPERUSER_PASSWORD = Settings.DJANGO_SUPERUSER_PASSWORD
 INSTALLED_APPS = [
     "jet",
     "apps.games.apps.GamesConfig",
+    "apps.users.apps.UsersConfig",
     "django.contrib.admin",
     "django.contrib.auth",
     "django.contrib.contenttypes",

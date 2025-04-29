@@ -1,42 +1,24 @@
-import os
-import django
 import pytest
-from dotenv import load_dotenv
-from django.contrib.auth import get_user_model
-from apps.games.models import Game, GameSession, GameResults, CustomUser
-from django.utils.timezone import make_aware
-from datetime import datetime
 
-os.environ.setdefault("DJANGO_SETTINGS_MODULE", "config.settings")
-load_dotenv()
-django.setup()
+from pytest_factoryboy import register
+
+from apps.games.tests.factories import GameFactory, GameSessionFactory, GameResultsFactory
+from apps.users.tests.factories import UserFactory
 
 
-@pytest.fixture
-def user(db) -> CustomUser:
-    User = get_user_model()
-    return User.objects.create_user(username="testuser", password="pass")
+register(UserFactory)
+register(GameFactory)
+register(GameSessionFactory)
+register(GameResultsFactory)
 
 
-@pytest.fixture
-def game(db) -> Game:
-    return Game.objects.create(name="Memory Game", language="EN", category="Cognitive")
+@pytest.fixture(autouse=True)
+def freeze_time(freezer):
+    freezer.move_to("2025-02-01T00:00:00Z")
 
 
-@pytest.fixture
-def game_session(db, game: Game, user: CustomUser) -> GameSession:
-    session = GameSession.objects.create(
-        game=game,
-        start_datetime=make_aware(datetime.now()),
-    )
-    session.participants.add(user)
-    return session
+@pytest.fixture(autouse=True)
+def patch_reports_dir(tmp_path, monkeypatch):
+    from apps.games import tasks
 
-
-@pytest.fixture
-def game_result(db, game_session: GameSession) -> GameResults:
-    return GameResults.objects.create(
-        game_session=game_session,
-        score=100,
-        is_completed=True,
-    )
+    monkeypatch.setattr(tasks, "REPORTS_DIR", str(tmp_path))

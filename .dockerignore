@@ -26,5 +26,5 @@ htmlcov/
 .venv-win
 .uv/
 media/
-static/
+apps/users/static/
 node_modules/

@@ -19,10 +19,14 @@ repos:
     hooks:
       - id: uv-lock
 
-  - repo: https://github.com/pre-commit/mirrors-mypy
-    rev: v1.9.0
+  - repo: local
     hooks:
       - id: mypy
+        name: mypy
+        entry: uv run mypy
+        language: system
+        types: [python]
+        additional_dependencies: []
 
   - repo: local
     hooks:

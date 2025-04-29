@@ -13,21 +13,22 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Set up Python 3.13
+      - name: Set up Python
         uses: actions/setup-python@v5
         with:
-          python-version: 3.13
+          python-version: '3.13'
 
       - name: Install uv
         run: |
           curl -LsSf https://astral.sh/uv/install.sh | sh
-          echo "$HOME/.cargo/bin" >> $GITHUB_PATH
+        env:
+          RUSTUP_HOME: ${{ runner.temp }}/rustup
+          CARGO_HOME: ${{ runner.temp }}/cargo
+      - name: Add cargo bin to PATH
+        run: echo "${{ runner.temp }}/cargo/bin" >> $GITHUB_PATH
 
-      - name: Install dependencies
-        run: uv sync
-
-      - name: Install pre-commit hooks
-        run: uv run pre-commit install
+      - name: Sync dependencies
+        run: uv sync --all
 
       - name: Run pre-commit
         run: uv run pre-commit run --all-files
