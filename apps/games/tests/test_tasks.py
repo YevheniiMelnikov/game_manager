@@ -6,6 +6,7 @@ from freezegun import freeze_time
 from django.utils.timezone import make_aware
 
 from apps.games.tasks import generate_monthly_reports, generate_session_ratio
+import apps.games.utils as game_utils
 
 
 def read_report(filepath: Path) -> dict:
@@ -21,10 +22,14 @@ def test_generate_monthly_reports(user_factory, game_factory, game_session_facto
     session = game_session_factory(game=game, participants=[user])
     game_results_factory(game_session=session, score=100, is_completed=True)
     result = generate_monthly_reports()
+
     assert result, "Monthly report generation returned empty result."
     assert game.name in result
     assert result[game.name]["participants"]
     assert all("total_score" in p for p in result[game.name]["participants"])
+
+    files = list(game_utils.REPORTS_DIR.glob("monthly_report_*.json"))
+    assert files, f"Monthly report file not found in {game_utils.REPORTS_DIR.resolve()}"
 
 
 @pytest.mark.django_db(transaction=True)
@@ -34,6 +39,12 @@ def test_generate_session_ratio(game, game_session, game_results) -> None:
     assert "by_game" in result
     assert "by_participant" in result
     assert "overall" in result
+
+    overall = result["overall"]
+    assert "completed" in overall and "failed" in overall and "completion_ratio" in overall
+
+    files = list(game_utils.REPORTS_DIR.glob("session_ratio_*.json"))
+    assert files, "Session ratio report file not found in REPORTS_DIR."
 
 
 @pytest.mark.django_db(transaction=True)
@@ -71,6 +82,13 @@ def test_session_ratio_logic(user) -> None:
         GameResults.objects.create(game_session=session, score=100, is_completed=is_completed)
 
     report = generate_session_ratio()
-    assert report["by_game"][game.name]["completed"] == 2
-    assert report["by_game"][game.name]["failed"] == 1
-    assert report["by_game"][game.name]["completion_ratio"] == 0.67
+    game_report = report["by_game"][game.name]
+
+    assert game_report["completed"] == 2
+    assert game_report["failed"] == 1
+
+    expected_completion_ratio = round(2 / 3, 2)
+    expected_failure_ratio = round(1 / 3, 2)
+
+    assert game_report["completion_ratio"] == expected_completion_ratio
+    assert game_report["failure_ratio"] == expected_failure_ratio

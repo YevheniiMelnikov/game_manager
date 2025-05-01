@@ -49,6 +49,7 @@ tasks:
     env:
       ENV: dev
     cmds:
-      - uv run python manage.py migrate
+      - rm -f db.sqlite3
+      - uv run python manage.py migrate --noinput
       - uv run python manage.py generate_fixtures
       - uv run python manage.py loaddata apps/games/fixtures/test_data.json

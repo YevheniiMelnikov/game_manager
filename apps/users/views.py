@@ -1,5 +1,6 @@
 from django.contrib import messages
 from django.contrib.auth import get_user_model
+from django.db import IntegrityError
 from django.shortcuts import render, redirect
 from django.views import View
 from rest_framework import status, viewsets
@@ -26,11 +27,8 @@ class RegisterView(APIView):
         serializer = RegisterSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
 
-        UserService.register_and_login(
-            request,
-            **serializer.validated_data,
-        )
-        return Response({"message": "User registered"}, status=status.HTTP_201_CREATED)
+        user = UserService.register_and_login(request, **serializer.validated_data)
+        return Response(UserSerializer(user).data, status=status.HTTP_201_CREATED)
 
 
 class LoginView(APIView):
@@ -68,7 +66,12 @@ class UserRegistrationView(View):
                     messages.error(request, f"{field}: {error}")
             return render(request, self.template_name, {"form": form})
 
-        UserService.register_and_login(request, **form.cleaned_data)
+        try:
+            UserService.register_and_login(request, **form.cleaned_data)
+        except IntegrityError:
+            messages.error(request, "A user with that username already exists.")
+            return render(request, self.template_name, {"form": form})
+
         messages.success(request, "Registration successful")
         return redirect("register_success")
 

@@ -1,8 +1,14 @@
+from typing import TYPE_CHECKING
+
 from django.contrib.auth import get_user_model
-from django.contrib.auth.models import Group
 from rest_framework import serializers
 
+from apps.users.services import UserService
+
 User = get_user_model()
+
+if TYPE_CHECKING:
+    from apps.users.models import User as UserType
 
 
 class UserSerializer(serializers.ModelSerializer):
@@ -15,22 +21,20 @@ class RegisterSerializer(serializers.ModelSerializer):
     password = serializers.CharField(write_only=True)
     company_id = serializers.IntegerField(write_only=True, required=False)
 
-    def validate_company_id(self, value):
+    def validate_company_id(self, value: int) -> int:
         if self.initial_data.get("role") == "CompanyAdmin" and not value:
-            raise serializers.ValidationError("Поле обязательно для CompanyAdmin.")
+            raise serializers.ValidationError("Field 'company_id' is required for CompanyAdmin role")
         return value
 
-    def create(self, validated_data):
+    def create(self, validated_data: dict) -> "UserType":
         company_id = validated_data.pop("company_id", None)
         password = validated_data.pop("password")
-        user = User.objects.create_user(**validated_data)
-        user.set_password(password)
-        if company_id:
-            user.company_id = company_id
-        user.save()
-        group, _ = Group.objects.get_or_create(name=user.role)
-        user.groups.add(group)
-        return user
+        return UserService.create_user(
+            username=validated_data["username"],
+            password=password,
+            role=validated_data["role"],
+            company_id=company_id,
+        )
 
     class Meta:
         model = User

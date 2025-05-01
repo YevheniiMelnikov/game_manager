@@ -4,16 +4,20 @@
 <head>
   <meta charset="UTF-8">
   <title>Registration Successful</title>
-  <link rel="preload" href="{% static 'games/fonts/Inter-Regular.woff2' %}" as="font" type="font/woff2" crossorigin>
-  <link rel="preload" href="{% static 'games/fonts/Inter-Bold.woff2' %}" as="font" type="font/woff2" crossorigin>
-  <link rel="stylesheet" href="{% static 'games/css/auth.css' %}">
+  <link rel="preload" href="{% static 'users/fonts/Inter-Regular.woff2' %}" as="font" type="font/woff2" crossorigin>
+  <link rel="preload" href="{% static 'users/fonts/Inter-Bold.woff2' %}" as="font" type="font/woff2" crossorigin>
+  <link rel="stylesheet" href="{% static 'users/css/auth.css' %}">
 </head>
 <body>
   <div class="auth-container">
     <h2>Registration Successful!</h2>
-    <p>You have been successfully registered and logged in.</p>
-
+    <p>You have been successfully registered and logged in. Redirecting to registration page...</p>
     <a href="{% url 'register' %}" class="btn" style="margin-top:1rem;">← Back to registration</a>
   </div>
+  <script>
+    setTimeout(() => {
+      window.location.href = "{% url 'register' %}";
+    }, 5000);
+  </script>
 </body>
 </html>

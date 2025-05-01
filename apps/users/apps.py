@@ -13,7 +13,7 @@ class UsersConfig(AppConfig):
         post_migrate.connect(create_superuser, sender=self)
 
 
-def create_superuser(sender, **kwargs):
+def create_superuser(sender, **kwargs) -> None:
     User = get_user_model()
     username = settings.DJANGO_SUPERUSER_USERNAME
     password = settings.DJANGO_SUPERUSER_PASSWORD
@@ -22,11 +22,12 @@ def create_superuser(sender, **kwargs):
         logger.warning("Superuser credentials not provided")
         return
 
-    _, created = User.objects.get_or_create(
-        username=username,
-        defaults={"is_superuser": True, "is_staff": True, "password": password},
-    )
+    user, created = User.objects.get_or_create(username=username)
     if created:
+        user.is_superuser = True
+        user.is_staff = True
+        user.set_password(password)
+        user.save()
         logger.success(f"Superuser '{username}' created")
     else:
         logger.info(f"Superuser '{username}' already exists")

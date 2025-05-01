@@ -1,3 +1,5 @@
+from unittest.mock import patch
+
 import pytest
 
 from pytest_factoryboy import register
@@ -17,7 +19,17 @@ def freeze_time(freezer):
 
 
 @pytest.fixture(autouse=True)
-def patch_reports_dir(tmp_path, monkeypatch):
+def patch_reports_dir(tmp_path):
     from apps.games import utils
 
-    monkeypatch.setattr(utils, "REPORTS_DIR", str(tmp_path))
+    utils.REPORTS_DIR = tmp_path
+
+    with patch("apps.games.tasks.save_report") as mocked:
+        def side_effect(filename, data):
+            path = tmp_path / filename
+            path.write_text(
+                utils.json.dumps(data, indent=4, ensure_ascii=False, sort_keys=True, default=str),
+                encoding="utf-8"
+            )
+        mocked.side_effect = side_effect
+        yield

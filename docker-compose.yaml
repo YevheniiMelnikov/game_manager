@@ -1,56 +1,55 @@
+x-shared-image: &shared-image
+  image: myapp:latest
+  build:
+    context: .
+    dockerfile: Dockerfile
+    args:
+      INSTALL_DEV: "false"
+  env_file: .env
+  networks: [game_manager]
+  restart: unless-stopped
+
 services:
   web:
-    container_name: game_management_api
-    build: .
-    env_file: .env
+    <<: *shared-image
+    container_name: api
     environment:
       RUN_MIGRATIONS: "true"
     command: >
-      /app/entrypoint.sh
-      uvicorn game_management.asgi:application
-      --host 0.0.0.0 --port 8000
+      uvicorn config.asgi:application --host 0.0.0.0 --port 8000
+    volumes:
+      - staticfiles:/app/staticfiles
+      - ./apps/users/static:/app/apps/users/static:ro
     depends_on:
-      db:    {condition: service_healthy}
-      redis: {condition: service_healthy}
+      - db
+      - redis
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8000/health/"]
       interval: 10s
       timeout: 5s
       retries: 3
-    restart: unless-stopped
-    volumes:
-      - staticfiles:/app/staticfiles
-    networks: [game_manager]
 
   celery:
+    <<: *shared-image
     container_name: celery_worker
-    build: .
-    env_file: .env
     environment:
       RUN_MIGRATIONS: "false"
-    command: >
-      /app/entrypoint.sh
-      celery -A game_management worker -l info
+      DJANGO_SETTINGS_MODULE: config.settings
+    command: celery -A config worker -l info
     depends_on:
-      db:    {condition: service_healthy}
-      redis: {condition: service_healthy}
-    restart: unless-stopped
-    networks: [game_manager]
+      - db
+      - redis
 
   celery_beat:
+    <<: *shared-image
     container_name: celery_beat
-    build: .
-    env_file: .env
     environment:
       RUN_MIGRATIONS: "false"
-    command: >
-      /app/entrypoint.sh
-      celery -A game_management beat -l info
+      DJANGO_SETTINGS_MODULE: config.settings
+    command: celery -A config beat -l info
     depends_on:
-      db:    {condition: service_healthy}
-      redis: {condition: service_healthy}
-    restart: unless-stopped
-    networks: [game_manager]
+      - db
+      - redis
 
   db:
     image: postgres:17
@@ -91,7 +90,7 @@ services:
       - /etc/letsencrypt:/etc/letsencrypt:ro
       - staticfiles:/opt/api/staticfiles:ro
     depends_on:
-      web: {condition: service_healthy}
+      - web
     restart: unless-stopped
     networks: [game_manager]
 

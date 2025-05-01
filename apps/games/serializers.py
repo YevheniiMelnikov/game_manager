@@ -12,7 +12,7 @@ class GameSerializer(serializers.ModelSerializer):
 
 
 class GameSessionSerializer(serializers.ModelSerializer):
-    participants = serializers.PrimaryKeyRelatedField(many=True, read_only=True)
+    participants = serializers.PrimaryKeyRelatedField(queryset=User.objects.all(), many=True)
 
     class Meta:
         model = GameSession

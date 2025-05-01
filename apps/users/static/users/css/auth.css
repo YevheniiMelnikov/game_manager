@@ -12,7 +12,6 @@
   font-display: swap;
   src: url('../fonts/Inter-Bold.woff2') format('woff2');
 }
-
 body {
   margin: 0;
   padding: 0;
@@ -88,4 +87,9 @@ body {
   padding: 0.75rem;
   border-radius: 4px;
   margin-bottom: 0.5rem;
+}
+input.error,
+select.error {
+  border-color: #d93025;
+  background-color: #fff6f6;
 }
